@@ -9,21 +9,8 @@ To build everything, just do:
 	bash build_script.sh
 
 
-
-Notes and Caveats
-
-Any species with a response value of 0 in the predictions file (first argument to preprocess executable) will be left out of the features file entirely.
-
-The preprocessing script is not very well tested. The easiest way to check if it worked correctly is to inspect the feature mapping file - if something went wrong, it will usually have nonsense characters as the alleles for some feature columns.
-
-
-Sample usage commands are in sample_run_commands.txt
-
--z parameter is feature-level sparsity coefficient (larger = more sparse)
--y parameter is group-level sparsity coefficient (larger = more sparse)
-
-
 preprocess program:
+
 	parameter 1: response matrix file
 	parameter 2: file containing list of alignment file paths
 	parameter 3: basename of output files
@@ -36,17 +23,25 @@ sample usage:
 	cd sample_files
 	../mlpack-3.2.2/build/bin/preprocess angiosperm_20spec_pred.txt angiosperm_100_sample_alns.txt angiosperm_input [n] [is]
 
-Note: the paths for the alignment files must be relative to the directory that preprocess is run from.
+Notes and Caveats
+
+The paths for the alignment files must be relative to the directory that preprocess is run from.
+
+Any species with a response value of 0 in the predictions file (first argument to preprocess executable) will be left out of the features file entirely.
+
+The preprocessing script is not very well tested. The easiest way to check if it worked correctly is to inspect the feature mapping file - if something went wrong, it will usually have nonsense characters as the alleles for some feature columns.
 
 The list of alignments given to the preprocess program can also generate overlapping groups of input for the overlapping SGLasso algorithm, by specifying multiple comma-separated files/genes on a single line.
 
 For example, for a non-grouped input, the file might look like:
+
 	aln_dir/gene1.fas
 	aln_dir/gene2.fas
 	aln_dir/gene3.fas
 	aln_dir/gene4.fas
 
 While input where gene2 shares properties with both gene1 and gene3 might look like:
+
 	aln_dir/gene1.fas,aln_dir/gene2.fas
 	aln_dir/gene3.fas,aln_dir/gene2.fas
 	aln_dir/gene4.fas
@@ -54,14 +49,14 @@ While input where gene2 shares properties with both gene1 and gene3 might look l
 
 mlpack_sg_lasso_leastr
 
-required inputs:
-  --features_file (-f)          Matrix containing feature set A.
-  --opts_ind_file (-n)          Matrix of indices defining non-overlapping group information.
-  --responses_file (-r)         Vector containing responses y.
-optional inputs:
-  --feature_weights_file (-w)   Output file to write learned feature weights to.
-  --lambda1 (-z)                Feature regularization parameter (z1 >=0). Default value 0.
-  --lambda2 (-y)                Group regularization parameter (z2 >=0). Default value 0.
+	required inputs:
+	  --features_file (-f)          Matrix containing feature set A.
+	  --opts_ind_file (-n)          Matrix of indices defining non-overlapping group information.
+	  --responses_file (-r)         Vector containing responses y.
+	optional inputs:
+	  --feature_weights_file (-w)   Output file to write learned feature weights to.
+	  --lambda1 (-z)                Feature regularization parameter (z1 >=0). Default value 0.
+	  --lambda2 (-y)                Group regularization parameter (z2 >=0). Default value 0.
 
 sample usage:
 
@@ -70,15 +65,15 @@ sample usage:
 
 mlpack_overlapping_sg_lasso_leastr
 
-required inputs:
-  --features_file (-f)          Matrix containing feature set A.
-  --opts_ind_file (-n)          Matrix of indices defining overlapping group information.
-  --field_file (-g)             Vector of feature indices for overlapping groups.
-  --responses_file (-r)         Vector containing responses y.
-optional inputs:
-  --feature_weights_file (-w)   Output file to write learned feature weights to.
-  --lambda1 (-z)                Feature regularization parameter (z1 >=0). Default value 0.
-  --lambda2 (-y)                Group regularization parameter (z2 >=0). Default value 0.
+	required inputs:
+	  --features_file (-f)          Matrix containing feature set A.
+	  --opts_ind_file (-n)          Matrix of indices defining overlapping group information.
+	  --field_file (-g)             Vector of feature indices for overlapping groups.
+	  --responses_file (-r)         Vector containing responses y.
+	optional inputs:
+	  --feature_weights_file (-w)   Output file to write learned feature weights to.
+	  --lambda1 (-z)                Feature regularization parameter (z1 >=0). Default value 0.
+	  --lambda2 (-y)                Group regularization parameter (z2 >=0). Default value 0.
 
 sample usage:
 
