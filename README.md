@@ -33,7 +33,7 @@ The preprocessing script is not very well tested. The easiest way to check if it
 
 The list of alignments given to the preprocess program can also generate overlapping groups of input for the overlapping SGLasso algorithm, by specifying multiple comma-separated files/genes on a single line.
 
-For example, for a non-grouped input, the file might look like:
+For example, for a non-overlapping set of input groups, the file might look like:
 
 	aln_dir/gene1.fas
 	aln_dir/gene2.fas
