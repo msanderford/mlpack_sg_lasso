@@ -82,6 +82,6 @@ sample usage:
 
 The weights in the output XML file are in the same order as the lines in the feature mapping file.
 Simple commands to remove the XML formatting, merge the two, and remove all features with a weight of zero:
-	`grep -P "<item>.*</item>" angiosperm_out_feature_weights.xml | sed -re "s/.*<item>(.*)<\/item>.*/\1/" > temp_angiosperm_out_feature_weights.txt
-	paste <(sed -e "1d" sample_files/feature_mapping_angiosperm_input.txt) temp_angiosperm_out_feature_weights.txt | grep -v "0.00000000000000000e+00" > angiosperm_out_feature_weights.txt`
+	`grep -P "<item>.*</item>" angiosperm_out_feature_weights.xml | sed -re "s/.*<item>(.*)<\/item>.*/\1/" > temp_angiosperm_out_feature_weights.txt`
+	`paste <(sed -e "1d" sample_files/feature_mapping_angiosperm_input.txt) temp_angiosperm_out_feature_weights.txt | grep -v "0.00000000000000000e+00" > angiosperm_out_feature_weights.txt`
 
