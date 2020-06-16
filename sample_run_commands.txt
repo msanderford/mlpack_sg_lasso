@@ -1,0 +1,3 @@
+cd sample_files
+../mlpack-3.2.2/build/bin/preprocess angiosperm_20spec_pred.txt angiosperm_100_sample_alns.txt
+../mlpack-3.2.2/build/bin/mlpack_sg_lasso -v -f feature_test_file.txt -z 0.1 -y 0.5 -n group_indices_test_file.txt -r response_test_file.txt -w test_file_out_feature_weights.xml

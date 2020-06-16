@@ -1,0 +1,8 @@
+test/7630_C12.fasta
+test/7630_C12_test1.fasta,test/7630_C12_test2.fasta
+test/7630_C12_test2.fasta,test/7630_C12_test3.fasta
+test/7630_C12_test1.fasta,test/7630_C12_test2.fasta,test/7630_C12_test3.fasta
+test/7630_C12_test3.fasta
+test/7630_C12_test2.fasta
+test/7630_C12_test1.fasta
+test/7630_C12.fasta
