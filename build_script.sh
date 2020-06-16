@@ -5,7 +5,7 @@ mkdir mlpack-3.2.2/build
 cd mlpack-3.2.2/build
 cmake ../
 make mlpack_sg_lasso mlpack_sg_lasso_leastr mlpack_overlapping_sg_lasso_leastr
-cd ../ol_sg_lasso_preprocessing_src
-g++ -o preprocess preprocess_main.cpp preprocess.cpp
+cd ../../ol_sg_lasso_preprocessing_src
+g++ -o overlapping preprocess_main.cpp preprocess.cpp
 cd ..
 cp ol_sg_lasso_preprocessing_src/preprocess mlpack-3.2.2/build/bin
