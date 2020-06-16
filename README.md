@@ -1,9 +1,11 @@
 Dependencies are listed here: https://github.com/mlpack/mlpack#3-dependencies
 
 Command to install all dependencies (hopefully):
+
 	sudo apt -y install gcc g++ perl pkgconf make cmake liblapack-dev libblas-dev libboost-all-dev libarmadillo-dev libensmallen-dev
 
 To build everything, just do:
+
 	bash build_script.sh
 
 
@@ -30,6 +32,7 @@ preprocess program:
 		is: "ignore singletons" gives a weight of zero to any feature that occurs in only one species
 
 sample usage:
+
 	cd sample_files
 	../mlpack-3.2.2/build/bin/preprocess angiosperm_20spec_pred.txt angiosperm_100_sample_alns.txt angiosperm_input [n] [is]
 
@@ -61,6 +64,7 @@ optional inputs:
   --lambda2 (-y)                Group regularization parameter (z2 >=0). Default value 0.
 
 sample usage:
+
 	mlpack-3.2.2/build/bin/mlpack_sg_lasso_leastr -v -f sample_files/feature_angiosperm_input.txt -z 0.1 -y 0.5 -n sample_files/group_indices_angiosperm_input.txt -r sample_files/response_angiosperm_input.txt -w angiosperm_out_feature_weights.xml
 
 
@@ -77,11 +81,13 @@ optional inputs:
   --lambda2 (-y)                Group regularization parameter (z2 >=0). Default value 0.
 
 sample usage:
+
 	mlpack-3.2.2/build/bin/mlpack_overlapping_sg_lasso_leastr -v -f sample_files/feature_angiosperm_input.txt -z 0.1 -y 0.5 -n sample_files/group_indices_angiosperm_input.txt -g sample_files/field_angiosperm_input.txt -r sample_files/response_angiosperm_input.txt -w angiosperm_out_feature_weights.xml
 
 
 The weights in the output XML file are in the same order as the lines in the feature mapping file.
 Simple commands to remove the XML formatting, merge the two, and remove all features with a weight of zero:
-	`grep -P "<item>.*</item>" angiosperm_out_feature_weights.xml | sed -re "s/.*<item>(.*)<\/item>.*/\1/" > temp_angiosperm_out_feature_weights.txt`
-	`paste <(sed -e "1d" sample_files/feature_mapping_angiosperm_input.txt) temp_angiosperm_out_feature_weights.txt | grep -v "0.00000000000000000e+00" > angiosperm_out_feature_weights.txt`
+
+	grep -P "<item>.*</item>" angiosperm_out_feature_weights.xml | sed -re "s/.*<item>(.*)<\/item>.*/\1/" > temp_angiosperm_out_feature_weights.txt
+	paste <(sed -e "1d" sample_files/feature_mapping_angiosperm_input.txt) temp_angiosperm_out_feature_weights.txt | grep -v "0.00000000000000000e+00" > angiosperm_out_feature_weights.txt
 
