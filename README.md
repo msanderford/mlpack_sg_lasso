@@ -1,15 +1,20 @@
-Dependencies are listed here: https://github.com/mlpack/mlpack#3-dependencies
+# Installation
 
-Command to install all dependencies (hopefully):
+MLPack dependencies are listed here: https://github.com/mlpack/mlpack#3-dependencies
+
+To install all dependencies (hopefully):
 
 	sudo apt -y install gcc g++ perl pkgconf make cmake liblapack-dev libblas-dev libboost-all-dev libarmadillo-dev libensmallen-dev
 
-To build everything, just do:
+To build everything, do the following:
 
+	git clone github.com/msanderford/mlpack_sg_lasso
+	cd mlpack_sg_lasso
 	bash build_script.sh
 
+# Components
 
-# preprocess program:
+## preprocess:
 
 	parameter 1: response matrix file
 	parameter 2: file containing list of alignment file paths
@@ -47,7 +52,7 @@ While input where gene2 shares properties with both gene1 and gene3 might look l
 	aln_dir/gene4.fas
 
 
-# mlpack_sg_lasso_leastr
+## mlpack_sg_lasso_leastr
 
 	required inputs:
 	  --features_file (-f)          Matrix containing feature set A.
@@ -63,7 +68,7 @@ sample usage:
 	mlpack-3.2.2/build/bin/mlpack_sg_lasso_leastr -v -f sample_files/feature_angiosperm_input.txt -z 0.1 -y 0.5 -n sample_files/group_indices_angiosperm_input.txt -r sample_files/response_angiosperm_input.txt -w angiosperm_out_feature_weights.xml
 
 
-# mlpack_overlapping_sg_lasso_leastr
+## mlpack_overlapping_sg_lasso_leastr
 
 	required inputs:
 	  --features_file (-f)          Matrix containing feature set A.
@@ -80,7 +85,7 @@ sample usage:
 	mlpack-3.2.2/build/bin/mlpack_overlapping_sg_lasso_leastr -v -f sample_files/feature_angiosperm_input.txt -z 0.1 -y 0.5 -n sample_files/group_indices_angiosperm_input.txt -g sample_files/field_angiosperm_input.txt -r sample_files/response_angiosperm_input.txt -w angiosperm_out_feature_weights.xml
 
 
-# Parsing output
+# Parsing outputs
 
 The weights in the output XML file are in the same order as the lines in the feature mapping file.
 Simple commands to remove the XML formatting, merge the two, and remove all features with a weight of zero:
