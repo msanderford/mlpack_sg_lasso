@@ -8,7 +8,7 @@ To install all dependencies (hopefully):
 
 To build everything, do the following:
 
-	git clone github.com/msanderford/mlpack_sg_lasso
+	git clone https://github.com/msanderford/mlpack_sg_lasso/
 	cd mlpack_sg_lasso
 	bash build_script.sh
 
