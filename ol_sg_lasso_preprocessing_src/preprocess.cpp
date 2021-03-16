@@ -200,21 +200,62 @@ void alnData::generateResponseFile(string baseName)
 
 void alnData::generateFeatureFile(string baseName)
 {
-	string featuresFileName = "feature_" + baseName + ".txt";
+//	string featuresFileName = baseName + "/feature_" + baseName + ".txt";
+        //Open as many file handles as possible, then close enough to leave a buffer for writing other files
+        vector<ofstream*> outputHandles;
+        int bufferHandles = 30;
+        int handleCount = 0;
+	string tempFileBase = "test_out";
+        while (true)
+        {
+                string ofname = baseName + "/" + tempFileBase + to_string(handleCount) + ".txt";
+                outputHandles.push_back(new ofstream(ofname));
+                handleCount++;
+//		cout << ofname << endl;
+                if (!outputHandles[handleCount-1]->is_open())
+                {
+                        break;
+                }
+        }
+//	cout << "0" << endl;
+        for (int i = handleCount-1; i >= handleCount - bufferHandles; i--)
+        {
+                outputHandles[i]->close();
+		string handleFName = baseName + "/" + tempFileBase + to_string(i) + ".txt";
+		std::remove(handleFName.c_str());
+        }
+        handleCount = handleCount - bufferHandles;
+        int fPerHandle;
+	fPerHandle = ceil(this->features.size() / handleCount);
 	//transpose features first for efficiency
-	vector<vector<float>> tFeatures;
-	for (int i = 0; i < this->species.size(); i++)
-	{
-		tFeatures.push_back({});
-	}
+	//vector<vector<float>> tFeatures;
+//	vector<float*> tFeatures;
+	vector<float*> featureCache;
+//	for (int i = 0; i < this->species.size(); i++)
+//	{
+//		tFeatures.push_back((float*) malloc(this->features.size() * sizeof(float)));
+//	}
+        for (int i = 0; i < fPerHandle; i++)
+        {
+                featureCache.push_back((float*) malloc(this->species.size() * sizeof(float)));
+        }
+	int handleIdx = 0;
 	for (int i = 0; i < this->features.size(); i++)
 	{
-		vector<int> oneHot = this->features[i];
+		vector<int> oneHot = this->features[i+1];
+//		if (i==0)
+//		{
+//			cout << to_string(oneHot[2]) << endl;
+//		}
+		int cacheIdx = i % fPerHandle;
+		handleIdx = i / fPerHandle;
 		float sum = 0;
 		float val;
-		for (int j = 0; j < this->features[i].size(); j++)
+//		for (int j = 0; j < this->features[i].size(); j++)
+		for (int j = 0; j < oneHot.size(); j++)
 		{
-			sum += this->features[i][j];
+//			sum += this->features[i][j];
+			sum += oneHot[j];
 		}
 		val = 1.0;
 		if (this->normalize)
@@ -227,32 +268,137 @@ void alnData::generateFeatureFile(string baseName)
 		}
 		for (int j = 0; j < oneHot.size(); j++)
 		{
-			tFeatures[j].push_back(val * oneHot[j]);
+			//tFeatures[j].push_back(val * oneHot[j]);
+//			tFeatures[j][i] = val * oneHot[j];
+			featureCache[cacheIdx][j] = val * oneHot[j];
+		}
+		if (cacheIdx == fPerHandle - 1)
+		{
+			for (int j = 0; j < this->species.size(); j++)
+			{
+				for (int k = 0; k < fPerHandle; k++)
+				{
+					if (featureCache[k][j] == 0.0)
+					{
+						*outputHandles[handleIdx] << to_string(0) << '\t';
+					}
+					else
+					{
+						*outputHandles[handleIdx] << to_string(featureCache[k][j]) << '\t';
+					}
+				}
+				*outputHandles[handleIdx] << endl;
+
+			}
+			outputHandles[handleIdx]->close();
 		}
 	}
+        string featuresFileNameNew = baseName + "/feature_" + baseName + ".txt";
+        ofstream featuresFileNew (featuresFileNameNew);
+	if (!featuresFileNew.is_open())
+        {
+                cout << "Could not open features output file, quitting..." << endl;
+		exit;
+        }
+	vector<ifstream*> inputHandles;
+	for (int i=0; i < handleCount; i++)
+	{
+		string ifname = baseName + "/" + tempFileBase + to_string(i) + ".txt";
+                inputHandles.push_back(new ifstream(ifname));
+	}
+	string fragment;
+	string featureLineNew;
+	while (std::getline(*inputHandles[0], fragment))
+	{
+//		featuresFileNew << fragment << '\t';
+		featureLineNew = fragment;
+		for (int i=1; i < handleCount; i++)
+		{
+			std::getline(*inputHandles[i], fragment);
+			featureLineNew = featureLineNew + fragment;
+//			featuresFileNew << fragment << '\t';
+		}
+//		featuresFileNew << endl;
+		featureLineNew.pop_back();
+		featuresFileNew << featureLineNew << endl;
+	}
+	for (int i=0; i < handleCount; i++)
+	{
+		inputHandles[i]->close();
+		string handleFName = baseName + "/" + tempFileBase + to_string(i) + ".txt";
+		std::remove(handleFName.c_str());
+	}
+	featuresFileNew.close();
+
+
+	//Open as many file handles as possible, then close enough to leave a buffer for writing other files
+	/*
+	vector<ofstream*> outputHandles;
+	int bufferHandles = 20;
+	int handleCount = 0;
+	while (true)
+	{
+		string ofname = baseName + "/test_out" + to_string(handleCount) + ".txt";
+		outputHandles.push_back(new ofstream(ofname));
+		handleCount++;
+		cout << ofname << endl;
+		if (!outputHandles[handleCount-1]->is_open())
+		{
+			break;
+		}
+	}
+	cout << "0" << endl;
+	for (int i = handleCount-1; i > handleCount - bufferHandles; i--)
+	{
+		outputHandles[i]->close();
+	}
+	handleCount = handleCount - bufferHandles;
+	int fPerHandle;
+	cout << "1" << endl;
+	//featuresFile.close();
 	//write to file
+	*/
+/*
 	ofstream featuresFile (featuresFileName);
+        if (!featuresFile.is_open())
+        {
+                cout << "Could not open features output file, quitting..." << endl;
+        }
+	cout << "2" << endl;
+//	fPerHandle = ceil(this->features.size() / handleCount);
 	if (featuresFile.is_open())
 	{
 		for (int i = 0; i < tFeatures.size(); i++)
 		{
 			string featureLine;
-			for (int j = 0; j < tFeatures[i].size(); j++)
+			int handleIdx = 0;
+			for (int j = 0; j < this->features.size(); j++)
 			{
+//				if (handleIdx != j / fPerHandle)
+//				{
+//					//and line break to last handle
+//					*outputHandles[handleIdx] << endl;
+//					handleIdx = j / fPerHandle;
+//				}
 				if (tFeatures[i][j] == 0.0)
 				{
 					featureLine.append(to_string(0) + '\t');
+//					*outputHandles[handleIdx] << to_string(0) + '\t';
 				}
 				else
 				{
 					featureLine.append(to_string(tFeatures[i][j]) + '\t');
+//					*outputHandles[handleIdx] << to_string(tFeatures[i][j]) + '\t';
 				}
 			}
+//			*outputHandles[handleIdx] << endl;
 			featureLine.pop_back();
 			featuresFile << featureLine << endl;
 		}
 		featuresFile.close();
 	}
+	cout << "3" << endl;
+*/
 
 }
 
