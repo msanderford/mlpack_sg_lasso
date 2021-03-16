@@ -1,7 +1,14 @@
 #include "preprocess.hpp"
 #include <string.h>
+#include <sys/stat.h>
 
 using namespace std;
+
+bool pathExists(const std::string &s)
+{
+	struct stat buffer;
+	return (stat (s.c_str(), &buffer) == 0);
+}
 
 int main(int argc, char *argv[])
 {
@@ -16,6 +23,11 @@ int main(int argc, char *argv[])
 	for (int i = 1; i < argc; ++i) cout << argv[i] << "\n";
 
 	string basename = argv[3];
+
+	if (!pathExists(basename))
+	{
+		system(("mkdir -p " + basename).c_str());
+	}
 
 	//Open species traits file and read everything with -1/1 into table
 
