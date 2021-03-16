@@ -39,7 +39,13 @@ void alnData::normalizeFeatures(bool normalize)
 
 void alnData::dropSingletons(bool ignoreSingletons)
 {
-	this->ignoreSingletons = ignoreSingletons;
+//	this->ignoreSingletons = ignoreSingletons;
+	this->countThreshold = 1;
+}
+
+void alnData::setCountThreshold(int countThreshold)
+{
+	this->countThreshold = countThreshold;
 }
 
 void alnData::readTraits(string speciesFile)
@@ -186,7 +192,7 @@ void alnData::processAln()
 
 void alnData::generateResponseFile(string baseName)
 {
-	string responseFileName = "response_" + baseName + ".txt";
+	string responseFileName = baseName + "/response_" + baseName + ".txt";
 	ofstream responseFile (responseFileName);
 	if (responseFile.is_open())
 	{
@@ -262,7 +268,8 @@ void alnData::generateFeatureFile(string baseName)
 		{
 			val = 1.0/sum;
 		}
-		if (this->ignoreSingletons && sum == 1.0)
+//		if (this->ignoreSingletons && sum == 1.0)
+		if (sum <= this->countThreshold)
 		{
 			val = 0.0;
 		}
@@ -404,7 +411,7 @@ void alnData::generateFeatureFile(string baseName)
 
 void alnData::generateMappingFile(string baseName)
 {
-	string mappingFileName = "feature_mapping_" + baseName + ".txt";
+	string mappingFileName = baseName + "/feature_mapping_" + baseName + ".txt";
 	ofstream mappingFile (mappingFileName);
 	if (mappingFile.is_open())
 	{
@@ -418,8 +425,8 @@ void alnData::generateMappingFile(string baseName)
 
 void alnData::generateGroupIndicesFile(string baseName)
 {
-	string groupIndicesFileName = "group_indices_" + baseName + ".txt";
-	string fieldFileName = "field_" + baseName + ".txt";
+	string groupIndicesFileName = baseName + "/group_indices_" + baseName + ".txt";
+	string fieldFileName = baseName + "/field_" + baseName + ".txt";
 	ofstream groupIndicesFile (groupIndicesFileName);
 	ofstream fieldFile (fieldFileName);
 	string indStarts, indEnds, weights, weightBuffer, gene;

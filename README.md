@@ -21,12 +21,11 @@ To build everything, do the following:
 	parameter 3: basename of output files
 	optional parameters (must be specified after parameters 1-3):
 		n: "normalize" feature weights by column
-		is: "ignore singletons" gives a weight of zero to any feature that occurs in only one species
-
+		ct {N}: ignore mutations observed fewer than {N} times (must be an integer)
 sample usage:
 
 	cd sample_files
-	../mlpack-3.2.2/build/bin/preprocess angiosperm_20spec_pred.txt angiosperm_100_sample_alns.txt angiosperm_input [n] [is]
+	../mlpack-3.2.2/build/bin/preprocess angiosperm_20spec_pred.txt angiosperm_100_sample_alns.txt angiosperm_input n ct 2
 
 Notes and Caveats
 

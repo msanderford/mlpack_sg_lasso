@@ -23,12 +23,14 @@ class alnData
 		void generateGroupIndicesFile(string baseName);
 		void normalizeFeatures(bool normalize);
 		void dropSingletons(bool ignoreSingletons);
+		void setCountThreshold(int countThreshold);
 
 	private:
 		int featureIndex;
 		int geneIndex;
 		bool normalize;
 		bool ignoreSingletons;
+		int countThreshold;
 		string currentGene;
 		vector<string> species;
 		vector<string> groups;

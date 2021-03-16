@@ -37,12 +37,21 @@ int main(int argc, char *argv[])
 				data->dropSingletons(true);
 				cout << "Ignoring singleton mutations..." << endl;
 			}
+			if (strcmp(argv[i], "ct") == 0)
+                        {
+                                cout << "Ignoring mutations observed fewer than " << argv[i+1] << "times..." << endl;
+				data->setCountThreshold(std::stoi(argv[i+1]));
+                        }
 		}
 	}
-
+	
+	cout << "Generating group indices file..." <<endl;
 	data->generateGroupIndicesFile(basename);
+	cout << "Generating mapping file..." <<endl;
 	data->generateMappingFile(basename);
+	cout << "Generating response file..." <<endl;
 	data->generateResponseFile(basename);
+	cout << "Generating feature file..." <<endl;
 	data->generateFeatureFile(basename);
 
 
