@@ -26,6 +26,8 @@ sample usage:
 
 	cd sample_files
 	../mlpack-3.2.2/build/bin/preprocess angiosperm_20spec_pred.txt angiosperm_100_sample_alns.txt angiosperm_input n ct 2
+	mv angiosperm_input ..
+	cd ..
 
 Notes and Caveats
 
@@ -64,7 +66,7 @@ While input where gene2 shares properties with both gene1 and gene3 might look l
 
 sample usage:
 
-	mlpack-3.2.2/build/bin/mlpack_sg_lasso_leastr -v -f sample_files/feature_angiosperm_input.txt -z 0.1 -y 0.5 -n sample_files/group_indices_angiosperm_input.txt -r sample_files/response_angiosperm_input.txt -w angiosperm_out_feature_weights.xml
+	mlpack-3.2.2/build/bin/mlpack_sg_lasso_leastr -v -f angiosperm_input/feature_angiosperm_input.txt -z 0.1 -y 0.5 -n angiosperm_input/group_indices_angiosperm_input.txt -r angiosperm_input/response_angiosperm_input.txt -w angiosperm_out_feature_weights.xml
 
 
 ## mlpack_overlapping_sg_lasso_leastr
@@ -81,7 +83,7 @@ sample usage:
 
 sample usage:
 
-	mlpack-3.2.2/build/bin/mlpack_overlapping_sg_lasso_leastr -v -f sample_files/feature_angiosperm_input.txt -z 0.1 -y 0.5 -n sample_files/group_indices_angiosperm_input.txt -g sample_files/field_angiosperm_input.txt -r sample_files/response_angiosperm_input.txt -w angiosperm_out_feature_weights.xml
+	mlpack-3.2.2/build/bin/mlpack_overlapping_sg_lasso_leastr -v -f angiosperm_input/feature_angiosperm_input.txt -z 0.1 -y 0.5 -n angiosperm_input/group_indices_angiosperm_input.txt -g angiosperm_input/field_angiosperm_input.txt -r angiosperm_input/response_angiosperm_input.txt -w angiosperm_out_feature_weights.xml
 
 
 # Parsing outputs
@@ -90,5 +92,5 @@ The weights in the output XML file are in the same order as the lines in the fea
 Simple commands to remove the XML formatting, merge the two, and remove all features with a weight of zero:
 
 	grep -P "<item>.*</item>" angiosperm_out_feature_weights.xml | sed -re "s/.*<item>(.*)<\/item>.*/\1/" > temp_angiosperm_out_feature_weights.txt
-	paste <(sed -e "1d" sample_files/feature_mapping_angiosperm_input.txt) temp_angiosperm_out_feature_weights.txt | grep -v "0.00000000000000000e+00" > angiosperm_out_feature_weights.txt
+	paste <(sed -e "1d" angiosperm_input/feature_mapping_angiosperm_input.txt) temp_angiosperm_out_feature_weights.txt | grep -v "0.00000000000000000e+00" > angiosperm_out_feature_weights.txt
 

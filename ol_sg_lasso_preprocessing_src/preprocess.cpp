@@ -216,13 +216,16 @@ void alnData::generateFeatureFile(string baseName)
         {
                 string ofname = baseName + "/" + tempFileBase + to_string(handleCount) + ".txt";
                 outputHandles.push_back(new ofstream(ofname));
-                handleCount++;
 //		cout << ofname << endl;
-                if (!outputHandles[handleCount-1]->is_open())
+                if (!outputHandles[handleCount]->is_open())
                 {
                         break;
                 }
+		handleCount++;
         }
+	int fPerHandle;
+	fPerHandle = ceil((float)this->features.size() / (handleCount - bufferHandles));
+	bufferHandles = handleCount - ceil((float)this->features.size() / (float)fPerHandle);
 //	cout << "0" << endl;
         for (int i = handleCount-1; i >= handleCount - bufferHandles; i--)
         {
@@ -231,8 +234,9 @@ void alnData::generateFeatureFile(string baseName)
 		std::remove(handleFName.c_str());
         }
         handleCount = handleCount - bufferHandles;
-        int fPerHandle;
-	fPerHandle = ceil(this->features.size() / handleCount);
+//	cout << "Features: " << this->features.size() << endl;
+//	cout << "Handles: " << handleCount << endl;
+//	cout << "Features per handle: " << fPerHandle << endl;
 	//transpose features first for efficiency
 	//vector<vector<float>> tFeatures;
 //	vector<float*> tFeatures;
@@ -279,11 +283,16 @@ void alnData::generateFeatureFile(string baseName)
 //			tFeatures[j][i] = val * oneHot[j];
 			featureCache[cacheIdx][j] = val * oneHot[j];
 		}
-		if (cacheIdx == fPerHandle - 1)
+		if (cacheIdx == fPerHandle - 1 || i == this->features.size() - 1)
 		{
+			int fPerHandleTemp = fPerHandle;
+			if (i == this->features.size() - 1)
+			{
+				fPerHandleTemp = this->features.size() % fPerHandle;
+			}
 			for (int j = 0; j < this->species.size(); j++)
 			{
-				for (int k = 0; k < fPerHandle; k++)
+				for (int k = 0; k < fPerHandleTemp; k++)
 				{
 					if (featureCache[k][j] == 0.0)
 					{
@@ -318,6 +327,7 @@ void alnData::generateFeatureFile(string baseName)
 	while (std::getline(*inputHandles[0], fragment))
 	{
 //		featuresFileNew << fragment << '\t';
+//		cout << "First fragment length: " << fragment.length() << endl;
 		featureLineNew = fragment;
 		for (int i=1; i < handleCount; i++)
 		{
