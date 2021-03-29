@@ -451,8 +451,8 @@ void alnData::generateGroupIndicesFile(string baseName)
 			stringstream ss(this->groups[i]);
 			while(getline(ss, gene, ','))
 			{
-				geneStart = groupIndices[geneGroupIndex[gene]][0];
-				geneEnd = groupIndices[geneGroupIndex[gene]][1];
+				geneStart = this->groupIndices[geneGroupIndex[gene]][0];
+				geneEnd = this->groupIndices[geneGroupIndex[gene]][1];
 				for (int j = geneStart; j <= geneEnd; j++)
 				{
 					fieldFile << to_string(j) + "\t";
