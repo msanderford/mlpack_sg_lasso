@@ -95,7 +95,7 @@ void alnData::processFastaFileList(string alnFileList)
 			{
 				if (this->geneGroupIndex.find(fastaFileName) == this->geneGroupIndex.end())
 				{
-					this->geneGroupIndex[fastaFileName] = this->geneGroupIndex.size();
+					this->geneGroupIndex[fastaFileName] = this->geneGroupIndex.size() - 1;
 					this->readAln(fastaFileName);
 					fastaFileName.erase(fastaFileName.find(".fas"), string::npos);
 					fastaFileName.erase(0, fastaFileName.find("/")+1);
@@ -451,8 +451,8 @@ void alnData::generateGroupIndicesFile(string baseName)
 			stringstream ss(this->groups[i]);
 			while(getline(ss, gene, ','))
 			{
-				geneStart = this->groupIndices[geneGroupIndex[gene]][0];
-				geneEnd = this->groupIndices[geneGroupIndex[gene]][1];
+				geneStart = groupIndices[geneGroupIndex[gene]][0];
+				geneEnd = groupIndices[geneGroupIndex[gene]][1];
 				for (int j = geneStart; j <= geneEnd; j++)
 				{
 					fieldFile << to_string(j) + "\t";
