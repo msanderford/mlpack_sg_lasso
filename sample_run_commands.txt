@@ -1,3 +1,5 @@
 cd sample_files
-../mlpack-3.2.2/build/bin/preprocess angiosperm_20spec_pred.txt angiosperm_100_sample_alns.txt angiosperm_input
-../mlpack-3.2.2/build/bin/mlpack_sg_lasso_leastr -v -f feature_angiosperm_input.txt -z 0.1 -y 0.5 -n group_indices_angiosperm_input.txt -r response_angiosperm_input.txt -w angiosperm_out_feature_weights.xml
+../mlpack-3.2.2/build/bin/preprocess angiosperm_20spec_pred.txt angiosperm_100_sample_alns.txt angiosperm_input n ct 2
+mv angiosperm_input ..
+cd ..
+mlpack-3.2.2/build/bin/mlpack_sg_lasso_leastr -v -f angiosperm_input/feature_angiosperm_input.txt -z 0.1 -y 0.5 -n angiosperm_input/group_indices_angiosperm_input.txt -r angiosperm_input/response_angiosperm_input.txt -w angiosperm_out_feature_weights.xml
