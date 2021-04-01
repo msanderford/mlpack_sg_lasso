@@ -4,7 +4,7 @@ cp -R sg_lasso_src/src mlpack-3.2.2
 cd mlpack-3.2.2
 cp CMakeLists.txt tempfile.txt
 head -n 20 tempfile.txt > CMakeLists.txt
-echo add_compile_definitions(_GLIBCXX_USE_CXX11_ABI=0) >> CMakeLists.txt
+echo 'add_compile_definitions(_GLIBCXX_USE_CXX11_ABI=0)' >> CMakeLists.txt
 tail -n +21 tempfile.txt >> CMakeLists.txt
 rm tempfile.txt
 mkdir build
