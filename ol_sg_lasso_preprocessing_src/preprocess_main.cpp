@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
 
 	//int testVal = processFasta(argv[2]);
 
-	alnData* data = new alnData(argv[1], argv[2]);
+	alnData* data = new alnData();
 
 	if (argc > 4)
 	{
@@ -64,6 +64,8 @@ int main(int argc, char *argv[])
 			}
 		}
 	}
+	
+	data->initialize(argv[1], argv[2]);
 	
 	cout << "Generating group indices file..." <<endl;
 	data->generateGroupIndicesFile(basename);
