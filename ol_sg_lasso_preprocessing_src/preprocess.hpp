@@ -24,6 +24,9 @@ class alnData
 		void normalizeFeatures(bool normalize);
 		void dropSingletons(bool ignoreSingletons);
 		void setCountThreshold(int countThreshold);
+		void setUpsampleBalance(bool upsampleBalance);
+		void setDownsampleBalance(bool downsampleBalance);
+		void balanceSample();
 
 	private:
 		int featureIndex;
