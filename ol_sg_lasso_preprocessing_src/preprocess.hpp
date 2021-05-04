@@ -11,8 +11,8 @@ using namespace std;
 class alnData
 {
 	public:
-		alnData(string speciesFile, string alnFileList);
-		void initialize();
+		alnData();
+		void initialize(string speciesFile, string alnFileList);
 		void readTraits(string fileName);
 		void printTraits();
 		void processFastaFileList(string fileName);
