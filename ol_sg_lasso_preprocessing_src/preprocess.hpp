@@ -30,6 +30,8 @@ class alnData
 		int geneIndex;
 		bool normalize;
 		bool ignoreSingletons;
+		bool upsampleBalance;
+		bool downsampleBalance;
 		int countThreshold;
 		string currentGene;
 		vector<string> species;
