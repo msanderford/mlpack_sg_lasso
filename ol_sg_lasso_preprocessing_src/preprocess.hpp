@@ -12,6 +12,7 @@ class alnData
 {
 	public:
 		alnData(string speciesFile, string alnFileList);
+		void initialize();
 		void readTraits(string fileName);
 		void printTraits();
 		void processFastaFileList(string fileName);
