@@ -54,6 +54,14 @@ int main(int argc, char *argv[])
                                 cout << "Ignoring mutations observed fewer than " << argv[i+1] << "times..." << endl;
 				data->setCountThreshold(std::stoi(argv[i+1]));
                         }
+			if (strcmp(argv[i], "ub") == 0)
+			{
+				data->setUpsampleBalance(true);
+			}
+			if (strcmp(argv[i], "db") == 0)
+			{
+				data->setDownsampleBalance(true);
+			}
 		}
 	}
 	
