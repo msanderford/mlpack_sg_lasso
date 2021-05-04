@@ -15,22 +15,22 @@ void trim(string& s)
 }
 
 
-alnData::alnData(string speciesFile, string alnFileList)
+alnData::alnData()
+{
+	this->featureIndex = 1;
+	this->normalize = false;
+}
+
+void alnData::initialize(string speciesFile, string alnFileList)
 {
 	//Read species traits/response file
 	this->readTraits(speciesFile);
 	this->balanceSample();
 	//this->printTraits();
 
-
 	cout << "Processing FASTA files list: " << alnFileList << "..." << endl;
-
-
 	//Read and process FASTA files
-	this->featureIndex = 1;
 	this->processFastaFileList(alnFileList);
-	this->normalize = false;
-
 }
 
 void alnData::normalizeFeatures(bool normalize)
