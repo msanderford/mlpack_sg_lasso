@@ -92,17 +92,17 @@ void alnData::balanceSample()
 	int poolSize;
 	vector<string> seqidsPos;
 	vector<string> seqidsNeg;
-	for (auto it = this->traits.begin(); i != this->traits.end(); i++)
+	for (auto it = this->traits.begin(); it != this->traits.end(); it++)
 	{
 		tempval = it->second;
 		traitSum = traitSum + tempval;
 		if (tempval > 0)
 		{
-			seqidsPos.push(it->first)
+			seqidsPos.push_back(it->first)
 		}
 		if (tempval < 0)
 		{
-			seqidsNeg.push(it->first)
+			seqidsNeg.push_back(it->first)
 		}
 	}
 	//Upsample
@@ -115,7 +115,7 @@ void alnData::balanceSample()
 			for (int i = 0; i > traitSum; i--)
 			{
 				//Select a trait-positive seqid at random
-				tempSeqid = seqidsPos[std::experimental::randint(0, poolsize-1)];
+				tempSeqid = seqidsPos[std::experimental::randint(0, poolSize-1)];
 				newSeqid = tempSeqid + "_pos_dup" + std::to_string(i);
 				this->species.push_back(newSeqid);
 				this->traits[newSeqid] = 1;
@@ -128,7 +128,7 @@ void alnData::balanceSample()
 			for (int i = 0; i < traitSum; i++)
 			{
 				//Select a trait-negative seqid at random
-				tempSeqid = seqidsNeg[std::experimental::randint(0, poolsize-1)];
+				tempSeqid = seqidsNeg[std::experimental::randint(0, poolSize-1)];
 				newSeqid = tempSeqid + "_neg_dup" + std::to_string(i);
 				this->species.push_back(newSeqid);
 				this->traits[newSeqid] = 1;
@@ -178,7 +178,8 @@ void alnData::readAln(string fastaFileName)
 {
 	string line;
 	int seqlen;
-	std::size_t found
+	int found;
+	std::size_t found;
 	vector<string> tempSpecies;
 	tempSpecies = this->species;
 	ifstream fastaFile (fastaFileName);
