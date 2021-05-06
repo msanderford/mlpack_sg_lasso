@@ -98,11 +98,11 @@ void alnData::balanceSample()
 		traitSum = traitSum + tempval;
 		if (tempval > 0)
 		{
-			seqidsPos.push_back(it->first)
+			seqidsPos.push_back(it->first);
 		}
 		if (tempval < 0)
 		{
-			seqidsNeg.push_back(it->first)
+			seqidsNeg.push_back(it->first);
 		}
 	}
 	//Upsample
@@ -178,7 +178,6 @@ void alnData::readAln(string fastaFileName)
 {
 	string line;
 	int seqlen;
-	int found;
 	std::size_t found;
 	vector<string> tempSpecies;
 	tempSpecies = this->species;
