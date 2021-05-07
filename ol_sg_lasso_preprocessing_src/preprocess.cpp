@@ -131,7 +131,7 @@ void alnData::balanceSample()
 				tempSeqid = seqidsNeg[std::experimental::randint(0, poolSize-1)];
 				newSeqid = tempSeqid + "_neg_dup" + std::to_string(i);
 				this->species.push_back(newSeqid);
-				this->traits[newSeqid] = 1;
+				this->traits[newSeqid] = -1;
 			}
 		}
 	}
@@ -212,6 +212,7 @@ void alnData::readAln(string fastaFileName)
 			found = tempSpecies.at(0).find("_dup") - 4;
 			//bool found = (std::find(my_list.begin(), my_list.end(), my_var) != my_list.end());
 			this->seqs[tempSpecies.at(0)] = this->seqs[tempSpecies.at(0).substr(0, found)];
+			tempSpecies.erase(tempSpecies.begin());
 		}
 		//Else set its sequence to all indels
 		else
@@ -278,6 +279,19 @@ void alnData::generateResponseFile(string baseName)
 			responseFile << this->traits[this->species[i]] << endl;
 		}
 		responseFile.close();
+	}
+	if (this->downsampleBalance || this->upsampleBalance)
+	{
+		string resampleFileName = baseName + "/resampled_" + baseName + ".txt";
+		ofstream resampleFile (resampleFileName);
+		if (resampleFile.is_open())
+		{
+			for (int i = 0; i < this->species.size(); i++)
+			{
+				resampleFile << this->species[i] << "\t" << this->traits[this->species[i]] << endl;
+			}
+			resampleFile.close();
+		}
 	}
 }
 
