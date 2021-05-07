@@ -114,7 +114,7 @@ void alnData::balanceSample()
 			poolSize = seqidsPos.size();
 			for (int i = 0; i > traitSum; i--)
 			{
-				//Select a trait-positive seqid at random
+				//Duplicate a trait-positive seqid at random
 				tempSeqid = seqidsPos[std::experimental::randint(0, poolSize-1)];
 				newSeqid = tempSeqid + "_pos_dup" + std::to_string(i);
 				this->species.push_back(newSeqid);
@@ -132,6 +132,34 @@ void alnData::balanceSample()
 				newSeqid = tempSeqid + "_neg_dup" + std::to_string(i);
 				this->species.push_back(newSeqid);
 				this->traits[newSeqid] = -1;
+			}
+		}
+	}
+	//Downsample
+	else if (this->downsampleBalance)
+	{
+		string targetSpecies;
+		if (traitSum <= -1)
+		{
+			//Downsample trait-negative sequences
+			for (int i = 0; i > traitSum; i--)
+			{
+				//Delete a trait-negative seqid at random
+				targetSpecies = seqidsNeg[std::experimental::randint(0, seqidsNeg.size() - 1)];
+				this->species.erase(this->species.begin() + this->species.find(targetSpecies));
+				this->traits.erase(targetSpecies);
+				
+			}
+		}
+		if (traitSum >= 1)
+		{
+			//Downsample trait-positive sequences
+			for (int i = 0; i < traitSum; i++)
+			{
+				//Delete a trait-positive seqid at random
+				targetSpecies = seqidsPos[std::experimental::randint(0, seqidsPos.size() - 1)];
+				this->species.erase(this->species.begin() + this->species.find(targetSpecies));
+				this->traits.erase(targetSpecies);	
 			}
 		}
 	}
