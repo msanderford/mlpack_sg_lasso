@@ -148,6 +148,7 @@ void alnData::balanceSample()
 				targetSpecies = seqidsNeg[std::experimental::randint(0, static_cast<int>(seqidsNeg.size() - 1))];
 				this->species.erase(find(this->species.begin(), this->species.end(), targetSpecies));
 				this->traits.erase(targetSpecies);
+				seqidsNeg.erase(find(seqidsNeg.begin(), seqidsNeg.end(), targetSpecies));
 			}
 		}
 		if (traitSum >= 1)
@@ -158,7 +159,8 @@ void alnData::balanceSample()
 				//Delete a trait-positive seqid at random
 				targetSpecies = seqidsPos[std::experimental::randint(0, static_cast<int>(seqidsPos.size() - 1))];
 				this->species.erase(find(this->species.begin(), this->species.end(), targetSpecies));
-				this->traits.erase(targetSpecies);	
+				this->traits.erase(targetSpecies);
+				seqidsPos.erase(find(seqidsPos.begin(), seqidsPos.end(), targetSpecies));
 			}
 		}
 	}
