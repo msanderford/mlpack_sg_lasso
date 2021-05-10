@@ -1,6 +1,7 @@
 #include "preprocess.hpp"
 #include <algorithm>
 #include <sstream>
+#include <random>
 
 using namespace std;
 
@@ -14,6 +15,13 @@ void trim(string& s)
       s.erase(p+1);
 }
 
+std::random_device rd;     // only used once to initialise (seed) engine
+std::mt19937 rng(rd());    // random-number engine used (Mersenne-Twister in this case)
+int randint(int min, int max)
+{
+	std::uniform_int_distribution<int> uni(min,max); // guaranteed unbiased
+	return uni(rng);
+}
 
 alnData::alnData()
 {
@@ -115,7 +123,7 @@ void alnData::balanceSample()
 			for (int i = 0; i > traitSum; i--)
 			{
 				//Duplicate a trait-positive seqid at random
-				tempSeqid = seqidsPos[std::experimental::randint(0, poolSize-1)];
+				tempSeqid = seqidsPos[randint(0, poolSize-1)];
 				newSeqid = tempSeqid + "_pos_dup" + std::to_string(i);
 				this->species.push_back(newSeqid);
 				this->traits[newSeqid] = 1;
@@ -128,7 +136,7 @@ void alnData::balanceSample()
 			for (int i = 0; i < traitSum; i++)
 			{
 				//Select a trait-negative seqid at random
-				tempSeqid = seqidsNeg[std::experimental::randint(0, poolSize-1)];
+				tempSeqid = seqidsNeg[randint(0, poolSize-1)];
 				newSeqid = tempSeqid + "_neg_dup" + std::to_string(i);
 				this->species.push_back(newSeqid);
 				this->traits[newSeqid] = -1;
@@ -145,7 +153,7 @@ void alnData::balanceSample()
 			for (int i = 0; i > traitSum; i--)
 			{
 				//Delete a trait-negative seqid at random
-				targetSpecies = seqidsNeg[std::experimental::randint(0, static_cast<int>(seqidsNeg.size() - 1))];
+				targetSpecies = seqidsNeg[randint(0, static_cast<int>(seqidsNeg.size() - 1))];
 				this->species.erase(find(this->species.begin(), this->species.end(), targetSpecies));
 				this->traits.erase(targetSpecies);
 				seqidsNeg.erase(find(seqidsNeg.begin(), seqidsNeg.end(), targetSpecies));
@@ -157,7 +165,7 @@ void alnData::balanceSample()
 			for (int i = 0; i < traitSum; i++)
 			{
 				//Delete a trait-positive seqid at random
-				targetSpecies = seqidsPos[std::experimental::randint(0, static_cast<int>(seqidsPos.size() - 1))];
+				targetSpecies = seqidsPos[randint(0, static_cast<int>(seqidsPos.size() - 1))];
 				this->species.erase(find(this->species.begin(), this->species.end(), targetSpecies));
 				this->traits.erase(targetSpecies);
 				seqidsPos.erase(find(seqidsPos.begin(), seqidsPos.end(), targetSpecies));
