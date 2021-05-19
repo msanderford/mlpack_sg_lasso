@@ -214,7 +214,7 @@ void alnData::processFastaFileList(string alnFileList)
 void alnData::readAln(string fastaFileName)
 {
 	string line;
-	int seqlen;
+	int seqlen = 0;
 	std::size_t found;
 	vector<string> tempSpecies;
 	tempSpecies = this->species;
@@ -234,12 +234,22 @@ void alnData::readAln(string fastaFileName)
 				{
 					trim(line);
 					this->seqs[seqid] = line;
+					if (line.length() < seqlen)
+					{
+						cout << "Sequence with ID " << seqid << " in file " << fastaFileName << " has improper length, exiting..." << endl;
+						exit(1);
+					}
 					seqlen = line.length();
 					tempSpecies.erase(find(tempSpecies.begin(), tempSpecies.end(), seqid));
 				}
 			}
 		}
 		fastaFile.close();
+	}
+	else
+	{
+		cout << "Could not open alignment file " << fastaFileName << ", exiting..." << endl;
+		exit(1);
 	}
 	while (!tempSpecies.empty())
 	{
