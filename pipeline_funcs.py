@@ -9,7 +9,7 @@ import xml.etree.ElementTree as ET
 from Bio import Phylo
 
 
-def generate_gene_prediction_table(weights_filename, responses_filename, groups_filename, features_filename, output_filename):
+def generate_gene_prediction_table(weights_filename, responses_filename, groups_filename, features_filename, output_filename, gene_list):
 	# Read weights, responses, and group indices files
 	model = xml_model_to_dict(weights_filename)
 	seqlist = []
@@ -41,6 +41,7 @@ def generate_gene_prediction_table(weights_filename, responses_filename, groups_
 			group_sums.append(sums)
 	# Write gene predictions table
 	with open(output_filename, 'w') as file:
+		file.write("SeqID\tPrediction\t{}\n".format("\t".join(gene_list)))
 		for (seqid, gene_sums) in zip(seqlist, group_sums):
 			file.write("{}\t{}\t{}\n".format(seqid, sum(gene_sums) + model["intercept"], "\t".join([str(x) for x in gene_sums])))
 
@@ -155,8 +156,8 @@ def run_mlp(features_filename, groups_filename, response_filename_list):
 	return weights_file_list
 
 
-def process_weights(weights_file_list, hypothesis_file_list, groups_filename, features_filename):
+def process_weights(weights_file_list, hypothesis_file_list, groups_filename, features_filename, gene_list):
 	for (weights_filename, hypothesis_filename) in zip(weights_file_list, hypothesis_file_list):
-		generate_gene_prediction_table(weights_filename, hypothesis_filename, groups_filename, features_filename, str(hypothesis_filename).replace("_hypothesis.txt", "_gene_predictions.txt"))
+		generate_gene_prediction_table(weights_filename, hypothesis_filename, groups_filename, features_filename, str(hypothesis_filename).replace("_hypothesis.txt", "_gene_predictions.txt"), gene_list)
 
 
