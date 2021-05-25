@@ -1,4 +1,5 @@
 import argparse
+import shutil
 import pipeline_funcs as pf
 
 
@@ -7,6 +8,10 @@ def main(args):
 	features_filename, groups_filename, response_filename_list = pf.generate_input_matrices(args.aln_list, hypothesis_file_list, args.output)
 	weights_file_list = pf.run_mlp(features_filename, groups_filename, response_filename_list)
 	pf.process_weights(weights_file_list, hypothesis_file_list, groups_filename, features_filename)
+	for hypothesis_filename in hypothesis_file_list:
+		shutil.move(hypothesis_filename, args.output)
+		shutil.move(hypothesis_filename.replace(".txt","_out_feature_weights.xml"), args.output)
+		shutil.move(hypothesis_filename.replace("hypothesis.txt","gene_predictions.txt"), args.output)
 
 
 if __name__ == '__main__':
