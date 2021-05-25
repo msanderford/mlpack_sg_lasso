@@ -5,9 +5,9 @@ import pipeline_funcs as pf
 
 def main(args):
 	hypothesis_file_list = pf.generate_hypothesis_set(args.tree, args.nodelist)
-	features_filename, groups_filename, response_filename_list = pf.generate_input_matrices(args.aln_list, hypothesis_file_list, args.output)
+	features_filename, groups_filename, response_filename_list, gene_list = pf.generate_input_matrices(args.aln_list, hypothesis_file_list, args.output)
 	weights_file_list = pf.run_mlp(features_filename, groups_filename, response_filename_list)
-	pf.process_weights(weights_file_list, hypothesis_file_list, groups_filename, features_filename)
+	pf.process_weights(weights_file_list, hypothesis_file_list, groups_filename, features_filename, gene_list)
 	for hypothesis_filename in hypothesis_file_list:
 		shutil.move(hypothesis_filename, args.output)
 		shutil.move(hypothesis_filename.replace(".txt","_out_feature_weights.xml"), args.output)
