@@ -6,4 +6,6 @@
 !ol_test_files/
 !angiosperm_100_sample_alns.txt
 !angiosperm_20spec_pred.txt
+!mmlp_test.nwk
+!mmlp_test_nodelist.txt
 !.gitignore
