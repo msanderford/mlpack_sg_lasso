@@ -102,7 +102,7 @@ sample usage:
 
 	python3.9 mmlp_pipeline.py sample_files/mmlp_test.nwk sample_files/angiosperm_100_sample_alns.txt -o sample_output
 
-In order to make a local installation of python 3.9.5 on the cluster, use the following commands:
+In order to make a local installation of python 3.9.5 on the cluster and install the required python packages, use the following commands:
 
 	wget https://www.python.org/ftp/python/3.9.5/Python-3.9.5.tgz
 	tar xvf Python-3.9.5.tgz
@@ -110,3 +110,4 @@ In order to make a local installation of python 3.9.5 on the cluster, use the fo
 	./configure --enable-optimizations --with-ensurepip=install --prefix=$HOME
 	make -j 8
 	make altinstall
+	python3.9 -m pip install biopython
