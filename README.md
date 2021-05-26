@@ -94,3 +94,10 @@ Simple commands to remove the XML formatting, merge the two, and remove all feat
 	grep -P "<item>.*</item>" angiosperm_out_feature_weights.xml | sed -re "s/.*<item>(.*)<\/item>.*/\1/" > temp_angiosperm_out_feature_weights.txt
 	paste <(sed -e "1d" angiosperm_input/feature_mapping_angiosperm_input.txt) temp_angiosperm_out_feature_weights.txt | grep -v "0.00000000000000000e+00" > angiosperm_out_feature_weights.txt
 
+# Phylogeny Testing Pipeline
+
+The pipeline is implemented as a python script which takes a set of gene alignments and a newick tree with at least one named internal node, then for each name internal node it creates a model predicting the chance that a given sequence descends from that node, and applies each predictive model to each input sequence and generates a table of predictive values grouped by gene for each sequence.
+
+sample usage:
+
+	python3.9 mmlp_pipeline.py sample_files/mmlp_test.nwk sample_files/angiosperm_100_sample_alns.txt -o sample_output
