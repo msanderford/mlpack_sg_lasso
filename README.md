@@ -96,8 +96,17 @@ Simple commands to remove the XML formatting, merge the two, and remove all feat
 
 # Phylogeny Testing Pipeline
 
-The pipeline is implemented as a python script which takes a set of gene alignments and a newick tree with at least one named internal node, then for each name internal node it creates a model predicting the chance that a given sequence descends from that node, and applies each predictive model to each input sequence and generates a table of predictive values grouped by gene for each sequence.
+The pipeline is implemented as a python script which takes a set of gene alignments and a newick tree with at least one named internal node then, for each named internal node, creates a model predicting the chance that a given sequence descends from that node, and finally applies each predictive model to each input sequence and generates a table of predictive values grouped by gene for each sequence.
 
 sample usage:
 
 	python3.9 mmlp_pipeline.py sample_files/mmlp_test.nwk sample_files/angiosperm_100_sample_alns.txt -o sample_output
+
+In order to make a local installation of python 3.9.5 on the cluster, use the following commands:
+
+	wget https://www.python.org/ftp/python/3.9.5/Python-3.9.5.tgz
+	tar xvf Python-3.9.5.tgz
+	cd Python-3.9.5
+	./configure --enable-optimizations --with-ensurepip=install --prefix=$HOME
+	make -j 8
+	make altinstall
