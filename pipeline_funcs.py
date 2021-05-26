@@ -121,7 +121,7 @@ def generate_input_matrices(alnlist_filename, hypothesis_filename_list, output_b
 	# Generate gene list from alignment list file
 	with open(alnlist_filename) as file:
 		for line in file:
-			gene_list.append(os.path.splitext(line.strip())[0])
+			gene_list.append(os.path.splitext(os.path.basename(line.strip()))[0])
 	# Construct preprocessing command for first hypothesis file
 	preprocess_exe = "/home/tuf79348/git/pipeline/mlpack-3.2.2/build/bin/preprocess"
 	preprocess_exe = os.path.join(os.getcwd(), "mlpack-3.2.2", "build", "bin", "preprocess")
