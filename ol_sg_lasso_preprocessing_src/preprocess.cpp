@@ -424,7 +424,7 @@ void alnData::generateFeatureFile(string baseName)
 		if (cacheIdx == fPerHandle - 1 || i == this->features.size() - 1)
 		{
 			int fPerHandleTemp = fPerHandle;
-			if (i == this->features.size() - 1)
+			if (i == this->features.size() - 1 && this->features.size() % fPerHandle > 0)
 			{
 				fPerHandleTemp = this->features.size() % fPerHandle;
 			}
