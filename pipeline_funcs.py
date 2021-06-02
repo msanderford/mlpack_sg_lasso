@@ -80,7 +80,7 @@ def lookup_by_names(tree):
 	return names
 
 
-def generate_hypothesis_set(newick_filename, nodelist_filename=None):
+def generate_hypothesis_set(newick_filename, nodelist_filename=None, response_filename=None):
 	tree = Phylo.parse(newick_filename, 'newick').__next__()
 	nodes = lookup_by_names(tree)
 	taxa_list = [x.name for x in tree.get_terminals()]
@@ -93,14 +93,28 @@ def generate_hypothesis_set(newick_filename, nodelist_filename=None):
 			nodelist = [line.strip() for line in file]
 	# print(nodelist)
 	responses = {}
-	for nodename in nodelist:
-		responses[nodename] = {x: -1 for x in taxa_list}
-		for terminal in nodes[nodename].get_terminals():
-			responses[nodename][terminal.name] = 1
-	for nodename in responses.keys():
-		with open("{}_hypothesis.txt".format(nodename), 'w') as file:
-			for taxa in taxa_list:
-				file.write("{}\t{}\n".format(taxa, responses[nodename][taxa]))
+	if response_filename is None:
+		for nodename in nodelist:
+			responses[nodename] = {x: -1 for x in taxa_list}
+			for terminal in nodes[nodename].get_terminals():
+				responses[nodename][terminal.name] = 1
+		for nodename in responses.keys():
+			with open("{}_hypothesis.txt".format(nodename), 'w') as file:
+				for taxa in taxa_list:
+					file.write("{}\t{}\n".format(taxa, responses[nodename][taxa]))
+	else:
+		with open(response_filename, 'r') as file:
+			responses["custom"] = {x: None for x in taxa_list}
+			custom_responses = [tuple(line.strip().split("\t")) for line in file]
+			for response in custom_responses:
+				for terminal in nodes[response[0]].get_terminals():
+					if responses["custom"][terminal.name] is None:
+						responses["custom"][terminal.name] = response[1]
+					else:
+						raise Exception("Response value of sequence {} specified more than one".format(terminal.name))
+			for key in responses["custom"].keys():
+				if responses["custom"][key] is None:
+					responses["custom"][key] = 0
 	return ["{}_hypothesis.txt".format(nodename) for nodename in responses.keys()]
 
 
