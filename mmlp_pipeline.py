@@ -19,6 +19,7 @@ if __name__ == '__main__':
 	parser.add_argument("tree", help="Input phylogeny to perform testing on.", type=str)
 	parser.add_argument("aln_list", help="List of alignment files to extract features from.", type=str)
 	parser.add_argument("--nodelist", help="File containing list of named internal nodes to test. If no file is specified, each named internal node of input phylogeny will be tested.", type=str, default=None)
+	parser.add_argument("--response", help="File containing list of named node/response value pairs.", type=str, default=None)
 	parser.add_argument("-z", "--lambda1", help="Feature sparsity parameter.", type=float, default=0.1)
 	parser.add_argument("-y", "--lambda2", help="Group sparsity parameter.", type=float, default=0.1)
 	parser.add_argument("-o", "--output", help="Output directory.", type=str, default="output")
