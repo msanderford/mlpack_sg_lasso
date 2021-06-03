@@ -12,6 +12,7 @@ def main(args):
 		shutil.move(hypothesis_filename, args.output)
 		shutil.move(hypothesis_filename.replace(".txt","_out_feature_weights.xml"), args.output)
 		shutil.move(hypothesis_filename.replace("hypothesis.txt","gene_predictions.txt"), args.output)
+		shutil.move(hypothesis_filename.replace("hypothesis.txt", "mapped_feature_weights.txt"), args.output)
 
 
 if __name__ == '__main__':
