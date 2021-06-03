@@ -67,6 +67,7 @@ def xml_model_to_dict(model_filename):
 					params["weight_list"].append(float(child2.text))
 				else:
 					params[child2.tag] = child2.text
+	params["intercept"] = 0
 	return params
 
 
