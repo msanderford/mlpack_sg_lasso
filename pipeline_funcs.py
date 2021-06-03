@@ -186,7 +186,8 @@ def generate_mapped_weights_file(weights_filename, feature_map_filename):
 	with open(feature_map_filename, 'r') as file:
 		for line in file:
 			data = line.strip().split("\t")
-			feature_map[data[0]] = data[1]
+			if len(data) == 2:
+				feature_map[data[0]] = data[1]
 	with open(output_filename, 'w') as file:
 		for i in range(1, len(model["weight_list"])):
 			file.write("{}\t{}\n".format(feature_map[i], model["weight_list"][i]))
