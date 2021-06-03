@@ -115,7 +115,7 @@ def generate_hypothesis_set(newick_filename, nodelist_filename=None, response_fi
 	for nodename in responses.keys():
 		with open("{}_hypothesis.txt".format(nodename), 'w') as file:
 			for taxa in taxa_list:
-				if responses[nodename][taxa] != 0:
+				if responses[nodename][taxa] != "0":
 					file.write("{}\t{}\n".format(taxa, responses[nodename][taxa]))
 	return ["{}_hypothesis.txt".format(nodename) for nodename in responses.keys()]
 
