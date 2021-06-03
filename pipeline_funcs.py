@@ -142,10 +142,13 @@ def generate_input_matrices(alnlist_filename, hypothesis_filename_list, output_b
 	preprocess_cwd, alnlist_filename = os.path.split(alnlist_filename)
 	options = ""
 	preprocess_cmd = "{} {} {} {} {}".format(preprocess_exe, os.path.join(os.getcwd(), hypothesis_filename_list[0]), alnlist_filename, output_basename, options)
-	print(preprocess_cmd)
+	# print(preprocess_cmd)
+	if preprocess_cwd == "":
+		preprocess_cwd = "."
 	subprocess.call(preprocess_cmd.split(" "), stderr=subprocess.STDOUT, cwd=preprocess_cwd)
 	# Move generated inputs to top level directory
-	shutil.move(os.path.join(preprocess_cwd, output_basename), ".")
+	if preprocess_cwd != ".":
+		shutil.move(os.path.join(preprocess_cwd, output_basename), ".")
 	# Construct response input file for each additional hypothesis file
 	for filename in hypothesis_filename_list:
 		with open(filename, 'r') as infile:
