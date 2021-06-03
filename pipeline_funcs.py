@@ -99,10 +99,6 @@ def generate_hypothesis_set(newick_filename, nodelist_filename=None, response_fi
 			responses[nodename] = {x: -1 for x in taxa_list}
 			for terminal in nodes[nodename].get_terminals():
 				responses[nodename][terminal.name] = 1
-		for nodename in responses.keys():
-			with open("{}_hypothesis.txt".format(nodename), 'w') as file:
-				for taxa in taxa_list:
-					file.write("{}\t{}\n".format(taxa, responses[nodename][taxa]))
 	else:
 		with open(response_filename, 'r') as file:
 			responses["custom"] = {x: None for x in taxa_list}
@@ -116,6 +112,10 @@ def generate_hypothesis_set(newick_filename, nodelist_filename=None, response_fi
 			for key in responses["custom"].keys():
 				if responses["custom"][key] is None:
 					responses["custom"][key] = 0
+	for nodename in responses.keys():
+		with open("{}_hypothesis.txt".format(nodename), 'w') as file:
+			for taxa in taxa_list:
+				file.write("{}\t{}\n".format(taxa, responses[nodename][taxa]))
 	return ["{}_hypothesis.txt".format(nodename) for nodename in responses.keys()]
 
 
