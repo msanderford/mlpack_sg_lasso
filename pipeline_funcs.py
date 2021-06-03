@@ -108,14 +108,15 @@ def generate_hypothesis_set(newick_filename, nodelist_filename=None, response_fi
 					if responses["custom"][terminal.name] is None:
 						responses["custom"][terminal.name] = response[1]
 					else:
-						raise Exception("Response value of sequence {} specified more than one".format(terminal.name))
+						raise Exception("Response value of sequence {} specified more than once".format(terminal.name))
 			for key in responses["custom"].keys():
 				if responses["custom"][key] is None:
 					responses["custom"][key] = 0
 	for nodename in responses.keys():
 		with open("{}_hypothesis.txt".format(nodename), 'w') as file:
 			for taxa in taxa_list:
-				file.write("{}\t{}\n".format(taxa, responses[nodename][taxa]))
+				if responses[nodename][taxa] != 0:
+					file.write("{}\t{}\n".format(taxa, responses[nodename][taxa]))
 	return ["{}_hypothesis.txt".format(nodename) for nodename in responses.keys()]
 
 
