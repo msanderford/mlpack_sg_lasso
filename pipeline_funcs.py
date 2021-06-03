@@ -182,12 +182,12 @@ def generate_mapped_weights_file(weights_filename, feature_map_filename):
 	# Read weights and feature mapping files
 	model = xml_model_to_dict(weights_filename)
 	feature_map = {}
-	output_filename = str(weights_filename).replace("_out_feature_weights.xml", "_mapped_feature_weights.txt")
+	output_filename = str(weights_filename).replace("_hypothesis_out_feature_weights.xml", "_mapped_feature_weights.txt")
 	with open(feature_map_filename, 'r') as file:
 		for line in file:
 			data = line.strip().split("\t")
 			if len(data) == 2:
-				feature_map[data[0]] = data[1]
+				feature_map[int(data[0])] = data[1]
 	with open(output_filename, 'w') as file:
 		for i in range(1, len(model["weight_list"])):
 			file.write("{}\t{}\n".format(feature_map[i], model["weight_list"][i]))
