@@ -163,13 +163,13 @@ def generate_input_matrices(alnlist_filename, hypothesis_filename_list, output_b
 	return [os.path.join(output_basename, "feature_" + output_basename + ".txt"), os.path.join(output_basename, "group_indices_" + output_basename + ".txt"), response_file_list, gene_list]
 
 
-def run_mlp(features_filename, groups_filename, response_filename_list):
+def run_mlp(features_filename, groups_filename, response_filename_list, sparsity, group_sparsity):
 	weights_file_list = []
 	mlp_exe = os.path.join(os.getcwd(), "mlpack-3.2.2", "build", "bin", "mlpack_sg_lasso_leastr")
 	# Run sg_lasso for each response file in response_filename_list
 	for response_filename in response_filename_list:
 		basename = str(os.path.splitext(os.path.basename(response_filename))[0]).replace("response_","")
-		mlp_cmd = "{} -v -f {} -z 0.1 -y 0.5 -n {} -r {} -w {}".format(mlp_exe, features_filename, groups_filename, response_filename, basename + "_out_feature_weights.xml")
+		mlp_cmd = "{} -v -f {} -z {} -y {} -n {} -r {} -w {}".format(mlp_exe, features_filename, sparsity, group_sparsity, groups_filename, response_filename, basename + "_out_feature_weights.xml")
 		print(mlp_cmd)
 		subprocess.call(mlp_cmd.split(" "), stderr=subprocess.STDOUT)
 		weights_file_list.append(basename + "_out_feature_weights.xml")
