@@ -101,17 +101,18 @@ def generate_hypothesis_set(newick_filename, nodelist_filename=None, response_fi
 				responses[nodename][terminal.name] = 1
 	else:
 		with open(response_filename, 'r') as file:
-			responses["custom"] = {x: None for x in taxa_list}
+			basename = os.path.splitext(os.path.basename(response_filename))[0]
+			responses[basename] = {x: None for x in taxa_list}
 			custom_responses = [tuple(line.strip().split("\t")) for line in file]
 			for response in custom_responses:
 				for terminal in nodes[response[0]].get_terminals():
-					if responses["custom"][terminal.name] is None:
-						responses["custom"][terminal.name] = response[1]
+					if responses[basename][terminal.name] is None:
+						responses[basename][terminal.name] = response[1]
 					else:
 						raise Exception("Response value of sequence {} specified more than once".format(terminal.name))
-			for key in responses["custom"].keys():
-				if responses["custom"][key] is None:
-					responses["custom"][key] = "0"
+			for key in responses[basename].keys():
+				if responses[basename][key] is None:
+					responses[basename][key] = "0"
 	for nodename in responses.keys():
 		with open("{}_hypothesis.txt".format(nodename), 'w') as file:
 			for taxa in taxa_list:
