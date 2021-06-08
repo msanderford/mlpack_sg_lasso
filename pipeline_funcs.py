@@ -181,6 +181,8 @@ def generate_input_matrices(alnlist_filename, hypothesis_filename_list, args):
 			preprocess_cmd = "{} {} {} {} {}".format(preprocess_exe, os.path.join(os.getcwd(), filename), alnlist_filename, output_basename, options)
 			# print(preprocess_cmd)
 			subprocess.call(preprocess_cmd.split(" "), stderr=subprocess.STDOUT, cwd=preprocess_cwd)
+			if preprocess_cwd != ".":
+				shutil.move(os.path.join(preprocess_cwd, output_basename), ".")
 			hypothesis_basename = os.path.splitext(os.path.basename(filename))[0]
 			shutil.move(os.path.join(output_basename, "feature_" + output_basename + ".txt"), os.path.join(output_basename, "feature_" + hypothesis_basename + ".txt"))
 			shutil.move(os.path.join(output_basename, "group_indices_" + output_basename + ".txt"), os.path.join(output_basename, "group_indices_" + hypothesis_basename + ".txt"))
@@ -191,8 +193,6 @@ def generate_input_matrices(alnlist_filename, hypothesis_filename_list, args):
 			response_file_list.append(os.path.join(output_basename, "response_" + hypothesis_basename + ".txt"))
 			group_indices_file_list.append(os.path.join(output_basename, "group_indices_" + hypothesis_basename + ".txt"))
 			features_file_list.append(os.path.join(output_basename, "feature_" + hypothesis_basename + ".txt"))
-		if preprocess_cwd != ".":
-			shutil.move(os.path.join(preprocess_cwd, output_basename), ".")
 		return [features_file_list, group_indices_file_list, response_file_list, gene_list]
 
 
