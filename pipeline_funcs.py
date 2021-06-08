@@ -187,6 +187,7 @@ def generate_input_matrices(alnlist_filename, hypothesis_filename_list, args):
 			shutil.move(os.path.join(output_basename, "response_" + output_basename + ".txt"), os.path.join(output_basename, "response_" + hypothesis_basename + ".txt"))
 			shutil.move(os.path.join(output_basename, "field_" + output_basename + ".txt"), os.path.join(output_basename, "field_" + hypothesis_basename + ".txt"))
 			shutil.move(os.path.join(output_basename, "feature_mapping_" + output_basename + ".txt"), os.path.join(output_basename, "feature_mapping_" + hypothesis_basename + ".txt"))
+			shutil.move(os.path.join(output_basename, "resampled_" + output_basename + ".txt"), os.path.join(output_basename, "resampled_" + hypothesis_basename + ".txt"))
 			response_file_list.append(os.path.join(output_basename, "response_" + hypothesis_basename + ".txt"))
 			group_indices_file_list.append(os.path.join(output_basename, "group_indices_" + hypothesis_basename + ".txt"))
 			features_file_list.append(os.path.join(output_basename, "feature_" + hypothesis_basename + ".txt"))
