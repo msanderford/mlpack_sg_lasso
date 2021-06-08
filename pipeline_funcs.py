@@ -208,8 +208,8 @@ def run_mlp(features_filename_list, groups_filename_list, response_filename_list
 	return weights_file_list
 
 
-def process_weights(weights_file_list, hypothesis_file_list, groups_filename, features_filename, gene_list):
-	for (weights_filename, hypothesis_filename) in zip(weights_file_list, hypothesis_file_list):
+def process_weights(weights_file_list, hypothesis_file_list, groups_filename_list, features_filename, gene_list):
+	for (weights_filename, hypothesis_filename, groups_filename) in zip(weights_file_list, hypothesis_file_list, groups_filename_list):
 		generate_gene_prediction_table(weights_filename, hypothesis_filename, groups_filename, features_filename, str(hypothesis_filename).replace("_hypothesis.txt", "_gene_predictions.txt"), gene_list)
 		generate_mapped_weights_file(weights_filename, str(groups_filename).replace("group_indices_", "feature_mapping_"))
 
