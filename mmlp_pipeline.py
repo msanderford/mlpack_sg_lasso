@@ -7,7 +7,7 @@ def main(args):
 	hypothesis_file_list = pf.generate_hypothesis_set(args.tree, args.nodelist, args.response)
 	features_filename_list, groups_filename_list, response_filename_list, gene_list = pf.generate_input_matrices(args.aln_list, hypothesis_file_list, args)
 	weights_file_list = pf.run_mlp(features_filename_list, groups_filename_list, response_filename_list, args.lambda1, args.lambda2)
-	pf.process_weights(weights_file_list, hypothesis_file_list, groups_filename, features_filename, gene_list)
+	pf.process_weights(weights_file_list, hypothesis_file_list, groups_filename_list, features_filename_list, gene_list)
 	for hypothesis_filename in hypothesis_file_list:
 		shutil.move(hypothesis_filename, args.output)
 		shutil.move(hypothesis_filename.replace(".txt","_out_feature_weights.xml"), args.output)
