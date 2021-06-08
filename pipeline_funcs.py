@@ -182,7 +182,10 @@ def generate_input_matrices(alnlist_filename, hypothesis_filename_list, args):
 			# print(preprocess_cmd)
 			subprocess.call(preprocess_cmd.split(" "), stderr=subprocess.STDOUT, cwd=preprocess_cwd)
 			if preprocess_cwd != ".":
-				shutil.move(os.path.join(preprocess_cwd, output_basename), ".")
+				if os.path.exists(output_basename):
+					shutil.copytree(os.path.join(preprocess_cwd, output_basename), ".")
+				else:
+					shutil.move(os.path.join(preprocess_cwd, output_basename), ".")
 			hypothesis_basename = os.path.splitext(os.path.basename(filename))[0]
 			shutil.move(os.path.join(output_basename, "feature_" + output_basename + ".txt"), os.path.join(output_basename, "feature_" + hypothesis_basename + ".txt"))
 			shutil.move(os.path.join(output_basename, "group_indices_" + output_basename + ".txt"), os.path.join(output_basename, "group_indices_" + hypothesis_basename + ".txt"))
