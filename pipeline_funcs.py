@@ -184,6 +184,7 @@ def generate_input_matrices(alnlist_filename, hypothesis_filename_list, args):
 			if preprocess_cwd != ".":
 				if os.path.exists(output_basename):
 					shutil.copytree(os.path.join(preprocess_cwd, output_basename), output_basename, dirs_exist_ok=True)
+					shutil.rmtree(os.path.join(preprocess_cwd, output_basename))
 				else:
 					shutil.move(os.path.join(preprocess_cwd, output_basename), output_basename)
 			hypothesis_basename = os.path.splitext(os.path.basename(filename))[0]
