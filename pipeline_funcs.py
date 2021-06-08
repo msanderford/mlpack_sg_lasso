@@ -132,42 +132,74 @@ def split_path(path):
 	return path_list
 
 
-def generate_input_matrices(alnlist_filename, hypothesis_filename_list, output_basename):
+def generate_input_matrices(alnlist_filename, hypothesis_filename_list, args):
+	output_basename = args.output
+	options = ""
+	modified_response = False
+	if args.upsample_balance:
+		options = "{} {}".format(options.strip(),"ub")
+		modified_response = True
+	elif args.downsample_balance:
+		options = "{} {}".format(options.strip(),"db")
+		modified_response = True
 	response_file_list = []
+	group_indices_file_list = []
+	features_file_list = []
 	gene_list = []
 	# Generate gene list from alignment list file
 	with open(alnlist_filename) as file:
 		for line in file:
 			gene_list.append(os.path.splitext(os.path.basename(line.strip()))[0])
-	# Construct preprocessing command for first hypothesis file
-	preprocess_exe = "/home/tuf79348/git/pipeline/mlpack-3.2.2/build/bin/preprocess"
+	#preprocess_exe = "/home/tuf79348/git/pipeline/mlpack-3.2.2/build/bin/preprocess"
 	preprocess_exe = os.path.join(os.getcwd(), "mlpack-3.2.2", "build", "bin", "preprocess")
 	preprocess_cwd, alnlist_filename = os.path.split(alnlist_filename)
-	options = ""
-	preprocess_cmd = "{} {} {} {} {}".format(preprocess_exe, os.path.join(os.getcwd(), hypothesis_filename_list[0]), alnlist_filename, output_basename, options)
-	# print(preprocess_cmd)
 	if preprocess_cwd == "":
-		preprocess_cwd = "."
-	subprocess.call(preprocess_cmd.split(" "), stderr=subprocess.STDOUT, cwd=preprocess_cwd)
-	# Move generated inputs to top level directory
-	if preprocess_cwd != ".":
-		shutil.move(os.path.join(preprocess_cwd, output_basename), ".")
-	# Construct response input file for each additional hypothesis file
-	for filename in hypothesis_filename_list:
-		with open(filename, 'r') as infile:
-			temp_fname = os.path.join(output_basename, "response_" + os.path.splitext(os.path.basename(filename))[0] + ".txt")
-			with open(temp_fname, 'w') as outfile:
-				for line in infile:
-					outfile.write("{}\n".format(line.strip().split("\t")[1]))
-				response_file_list.append(temp_fname)
-	return [os.path.join(output_basename, "feature_" + output_basename + ".txt"), os.path.join(output_basename, "group_indices_" + output_basename + ".txt"), response_file_list, gene_list]
+			preprocess_cwd = "."
+	if not modified_response:
+		# Construct preprocessing command for first hypothesis file
+		preprocess_cmd = "{} {} {} {} {}".format(preprocess_exe, os.path.join(os.getcwd(), hypothesis_filename_list[0]), alnlist_filename, output_basename, options)
+		# print(preprocess_cmd)
+		subprocess.call(preprocess_cmd.split(" "), stderr=subprocess.STDOUT, cwd=preprocess_cwd)
+		# Move generated inputs to top level directory
+		if preprocess_cwd != ".":
+			shutil.move(os.path.join(preprocess_cwd, output_basename), ".")
+		# Construct response input file for each additional hypothesis file
+		for filename in hypothesis_filename_list:
+			with open(filename, 'r') as infile:
+				temp_fname = os.path.join(output_basename, "response_" + os.path.splitext(os.path.basename(filename))[0] + ".txt")
+				with open(temp_fname, 'w') as outfile:
+					for line in infile:
+						outfile.write("{}\n".format(line.strip().split("\t")[1]))
+					response_file_list.append(temp_fname)
+					group_indices_file_list.append(os.path.join(output_basename, "group_indices_" + output_basename + ".txt"))
+					features_file_list.append(os.path.join(output_basename, "feature_" + output_basename + ".txt"))
+		#return [os.path.join(output_basename, "feature_" + output_basename + ".txt"), os.path.join(output_basename, "group_indices_" + output_basename + ".txt"), response_file_list, gene_list]
+		return [features_file_list, group_indices_file_list, response_file_list, gene_list]
+	else:
+		for filename in hypothesis_filename_list:
+			# Construct preprocessing command
+			preprocess_cmd = "{} {} {} {} {}".format(preprocess_exe, os.path.join(os.getcwd(), filename), alnlist_filename, output_basename, options)
+			# print(preprocess_cmd)
+			subprocess.call(preprocess_cmd.split(" "), stderr=subprocess.STDOUT, cwd=preprocess_cwd)
+			hypothesis_basename = os.path.splitext(os.path.basename(filename))[0]
+			shutil.move(os.path.join(output_basename, "feature_" + output_basename + ".txt"), os.path.join(output_basename, "feature_" + hypothesis_basename + ".txt"))
+			shutil.move(os.path.join(output_basename, "group_indices_" + output_basename + ".txt"), os.path.join(output_basename, "group_indices_" + hypothesis_basename + ".txt"))
+			shutil.move(os.path.join(output_basename, "response_" + output_basename + ".txt"), os.path.join(output_basename, "response_" + hypothesis_basename + ".txt"))
+			shutil.move(os.path.join(output_basename, "field_" + output_basename + ".txt"), os.path.join(output_basename, "field_" + hypothesis_basename + ".txt"))
+			shutil.move(os.path.join(output_basename, "feature_mapping_" + output_basename + ".txt"), os.path.join(output_basename, "feature_mapping_" + hypothesis_basename + ".txt"))
+			response_file_list.append(os.path.join(output_basename, "response_" + hypothesis_basename + ".txt"))
+			group_indices_file_list.append(os.path.join(output_basename, "group_indices_" + hypothesis_basename + ".txt"))
+			features_file_list.append(os.path.join(output_basename, "feature_" + hypothesis_basename + ".txt"))
+		if preprocess_cwd != ".":
+			shutil.move(os.path.join(preprocess_cwd, output_basename), ".")
+		return [features_file_list, group_indices_file_list, response_file_list, gene_list]
 
 
-def run_mlp(features_filename, groups_filename, response_filename_list, sparsity, group_sparsity):
+def run_mlp(features_filename_list, groups_filename_list, response_filename_list, sparsity, group_sparsity):
 	weights_file_list = []
 	mlp_exe = os.path.join(os.getcwd(), "mlpack-3.2.2", "build", "bin", "mlpack_sg_lasso_leastr")
 	# Run sg_lasso for each response file in response_filename_list
-	for response_filename in response_filename_list:
+	for response_filename, features_filename, groups_filename in zip(response_filename_list, features_filename_list, groups_filename_list):
 		basename = str(os.path.splitext(os.path.basename(response_filename))[0]).replace("response_","")
 		mlp_cmd = "{} -v -f {} -z {} -y {} -n {} -r {} -w {}".format(mlp_exe, features_filename, sparsity, group_sparsity, groups_filename, response_filename, basename + "_out_feature_weights.xml")
 		print(mlp_cmd)
