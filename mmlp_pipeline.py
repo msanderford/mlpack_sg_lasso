@@ -5,8 +5,8 @@ import pipeline_funcs as pf
 
 def main(args):
 	hypothesis_file_list = pf.generate_hypothesis_set(args.tree, args.nodelist, args.response)
-	features_filename, groups_filename, response_filename_list, gene_list = pf.generate_input_matrices(args.aln_list, hypothesis_file_list, args.output)
-	weights_file_list = pf.run_mlp(features_filename, groups_filename, response_filename_list, args.lambda1, args.lambda2)
+	features_filename_list, groups_filename_list, response_filename_list, gene_list = pf.generate_input_matrices(args.aln_list, hypothesis_file_list, args)
+	weights_file_list = pf.run_mlp(features_filename_list, groups_filename_list, response_filename_list, args.lambda1, args.lambda2)
 	pf.process_weights(weights_file_list, hypothesis_file_list, groups_filename, features_filename, gene_list)
 	for hypothesis_filename in hypothesis_file_list:
 		shutil.move(hypothesis_filename, args.output)
@@ -24,6 +24,8 @@ if __name__ == '__main__':
 	parser.add_argument("-z", "--lambda1", help="Feature sparsity parameter.", type=float, default=0.1)
 	parser.add_argument("-y", "--lambda2", help="Group sparsity parameter.", type=float, default=0.1)
 	parser.add_argument("-o", "--output", help="Output directory.", type=str, default="output")
+	parser.add_argument("--upsample_balance", help="Balance positive and negative response sets by upsampling the underpopulated set.", action='store_true', default=False)
+	parser.add_argument("--downsample_balance", help="Balance positive and negative response sets by downsampling the overpopulated set.", action='store_true', default=False)
 	args = parser.parse_args()
 	main(args)
 	# generate_gene_prediction_table(weights_filename, responses_filename, groups_filename, features_filename, output_filename)
