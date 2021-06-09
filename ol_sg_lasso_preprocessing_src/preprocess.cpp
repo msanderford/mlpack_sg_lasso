@@ -333,7 +333,7 @@ void alnData::processAln()
 	{
 		//Write features from aln being processed to file and push file name to this->featureCacheFiles vector.
 		//Leave it transposed for performance, switch it back when it's written to the final features file.
-		string cacheFileName = "cache_" + this->currentGene + ".txt";
+		string cacheFileName = ".cache_" + this->currentGene + ".txt";
 		ofstream cacheFile (cacheFileName);
 		if (cacheFile.is_open())
 		{
@@ -343,6 +343,11 @@ void alnData::processAln()
 				copy(this->features[i+1].begin(), this->features[i+1].end(), ostream_iterator<int>(result, "	"));
 				cacheFile << result.str().c_str() << endl
 			}
+		}
+		else
+		{
+			//Todo: Add real error message here
+			throw;
 		}
 		this->featureCacheFiles.push_back(cacheFileName)
 	}
