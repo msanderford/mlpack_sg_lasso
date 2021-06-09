@@ -67,6 +67,11 @@ void alnData::setDownsampleBalance(bool downsampleBalance)
 	this->downsampleBalance = downsampleBalance;
 }
 
+void alnData::setDiskCaching(bool useDiskCache)
+{
+	this->useDiskCache = useDiskCache;
+}
+
 void alnData::readTraits(string speciesFile)
 {
 	string speciesTrait;
