@@ -27,6 +27,7 @@ class alnData
 		void setCountThreshold(int countThreshold);
 		void setUpsampleBalance(bool upsampleBalance);
 		void setDownsampleBalance(bool downsampleBalance);
+		void setDiskCaching(bool useDiskCache);
 		void balanceSample();
 
 	private:
