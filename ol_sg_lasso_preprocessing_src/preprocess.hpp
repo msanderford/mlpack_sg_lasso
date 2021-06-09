@@ -36,6 +36,7 @@ class alnData
 		bool ignoreSingletons;
 		bool upsampleBalance;
 		bool downsampleBalance;
+		bool useDiskCache;
 		int countThreshold;
 		string currentGene;
 		vector<string> species;
@@ -46,5 +47,6 @@ class alnData
 		map<string, string> seqs;
 		map<int, string> featureMap;
 		map<int, vector<int>> features;
+		map<int, string> featureCacheFiles;
 
 };
