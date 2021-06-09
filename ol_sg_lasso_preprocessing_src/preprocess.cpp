@@ -331,25 +331,27 @@ void alnData::processAln()
 	this->groupIndices.push_back({groupStartIndex,this->featureIndex-1});
 	if (this->useDiskCache)
 	{
-		//Write features from aln being processed to file and push file name to this->featureCacheFiles vector.
-		//Leave it transposed for performance, switch it back when it's written to the final features file.
-		string cacheFileName = ".cache_" + this->currentGene + ".txt";
-		ofstream cacheFile (cacheFileName);
-		if (cacheFile.is_open())
+		string cacheFileName;
+		ofstream cacheFile;
+		vector<int> cacheSegment;
+		for (int i = 0; i < this->species.size(); i++)
 		{
-			for (int i = 0; i < cacheFeatureIndex; i++)
+			for (int j = 0; j < cacheFeatureIndex; j++)
 			{
-				stringstream line;
-				copy(this->features[i+1].begin(), this->features[i+1].end(), ostream_iterator<int>(result, "	"));
-				cacheFile << result.str().c_str() << endl;
+				cacheSegment.push_back(this->features[j+1][i]);
 			}
+			stringstream cacheLine;
+			copy(cacheSegment.begin(), cacheSegment.end(), ostream_iterator<int>(cacheLine, "	"));
+			cacheFileName = ".cache_" + this->species[i] + ".txt";
+			cacheFile.open(cacheFileName, std::ofstream::app);
+			if (!cacheFile.is_open())
+			{
+                		cout << "Could not open disk caching file for writing, quitting..." << endl;
+				exit;
+			}
+			cacheFile << cacheLine.str().c_str();
+			cacheFile.close();
 		}
-		else
-		{
-                	cout << "Could not open disk caching file, quitting..." << endl;
-			exit;
-		}
-		this->featureCacheFiles.push_back(cacheFileName)
 	}
 }
 
@@ -382,6 +384,33 @@ void alnData::generateResponseFile(string baseName)
 
 void alnData::generateFeatureFile(string baseName)
 {
+	if (this->useDiskCache)
+	{
+		string cacheFileName;
+		string cacheLine;
+		ifstream cacheFile;
+		string featuresFileNameNew = baseName + "/feature_" + baseName + ".txt";
+		ofstream featuresFileNew (featuresFileNameNew);
+		if (!featuresFileNew.is_open())
+		{
+			cout << "Could not open features output file, quitting..." << endl;
+			exit;
+		}
+		for (int i = 0; i < this->species.size(), i++)
+		{
+			cacheFileName = ".cache_" + this->species[i] + ".txt";
+			cacheFile.open(cacheFileName);
+			if (!cacheFile.is_open())
+			{
+                		cout << "Could not open disk caching file for reading, quitting..." << endl;
+				exit;
+			}
+			getline(cacheFile,cacheLine);
+			featuresFileNew << cacheLine << endl;
+			cacheFile.close();
+		}
+		return;
+	}
 //	string featuresFileName = baseName + "/feature_" + baseName + ".txt";
         //Open as many file handles as possible, then close enough to leave a buffer for writing other files
         vector<ofstream*> outputHandles;
