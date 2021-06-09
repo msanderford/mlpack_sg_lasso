@@ -341,13 +341,13 @@ void alnData::processAln()
 			{
 				stringstream line;
 				copy(this->features[i+1].begin(), this->features[i+1].end(), ostream_iterator<int>(result, "	"));
-				cacheFile << result.str().c_str() << endl
+				cacheFile << result.str().c_str() << endl;
 			}
 		}
 		else
 		{
-			//Todo: Add real error message here
-			throw;
+                	cout << "Could not open disk caching file, quitting..." << endl;
+			exit;
 		}
 		this->featureCacheFiles.push_back(cacheFileName)
 	}
