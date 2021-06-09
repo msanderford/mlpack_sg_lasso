@@ -336,9 +336,9 @@ void alnData::processAln()
 		vector<int> cacheSegment;
 		for (int i = 0; i < this->species.size(); i++)
 		{
-			for (int j = 0; j < cacheFeatureIndex; j++)
+			for (int j = 1; j < cacheFeatureIndex; j++)
 			{
-				cacheSegment.push_back(this->features[j+1][i]);
+				cacheSegment.push_back(this->features[j][i]);
 			}
 			stringstream cacheLine;
 			copy(cacheSegment.begin(), cacheSegment.end(), ostream_iterator<int>(cacheLine, "	"));
