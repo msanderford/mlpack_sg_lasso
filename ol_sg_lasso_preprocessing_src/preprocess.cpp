@@ -280,7 +280,8 @@ void alnData::processAln()
 {
 	int seqLen = this->seqs[this->species[1]].size();
 	int numSpecies = this->species.size();
-	int groupStartIndex = this-> featureIndex;
+	int groupStartIndex = this->featureIndex;
+	int cacheFeatureIndex = 1;
 
 	for (int i = 0; i < seqLen; i++)
 	{
@@ -311,14 +312,40 @@ void alnData::processAln()
 							oneHot.push_back(0);
 						}
 					}
-					this->features[featureIndex] = oneHot;
+					//If disk cache is being used, overwrite features starting from 1 for each gene
+					if (this->useDiskCache)
+					{
+						this->features[cacheFeatureIndex] = oneHot;
+					}
+					else
+					{
+						this->features[featureIndex] = oneHot;
+					}
 					this->featureIndex++;
+					cacheFeatureIndex++;
 				}
 				baseIter++;
 			}
 		}
 	}
 	this->groupIndices.push_back({groupStartIndex,this->featureIndex-1});
+	if (this->useDiskCache)
+	{
+		//Write features from aln being processed to file and push file name to this->featureCacheFiles vector.
+		//Leave it transposed for performance, switch it back when it's written to the final features file.
+		string cacheFileName = "cache_" + this->currentGene + ".txt";
+		ofstream cacheFile (cacheFileName);
+		if (cacheFile.is_open())
+		{
+			for (int i = 0; i < cacheFeatureIndex; i++)
+			{
+				stringstream line;
+				copy(this->features[i+1].begin(), this->features[i+1].end(), ostream_iterator<int>(result, "	"));
+				cacheFile << result.str().c_str() << endl
+			}
+		}
+		this->featureCacheFiles.push_back(cacheFileName)
+	}
 }
 
 void alnData::generateResponseFile(string baseName)
