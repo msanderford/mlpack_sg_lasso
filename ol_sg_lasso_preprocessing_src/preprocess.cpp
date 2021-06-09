@@ -332,24 +332,35 @@ void alnData::processAln()
 	if (this->useDiskCache)
 	{
 		string cacheFileName;
+		string cacheLineString;
 		ofstream cacheFile;
-		vector<int> cacheSegment;
 		for (int i = 0; i < this->species.size(); i++)
 		{
+			vector<int> cacheSegment;
 			for (int j = 1; j < cacheFeatureIndex; j++)
 			{
 				cacheSegment.push_back(this->features[j][i]);
 			}
 			stringstream cacheLine;
 			copy(cacheSegment.begin(), cacheSegment.end(), ostream_iterator<int>(cacheLine, "	"));
+			cacheLineString = cacheLine.str();
 			cacheFileName = ".cache_" + this->species[i] + ".txt";
+			if (this->geneGroupIndex.size() == 1)
+			{
+				std::remove(cacheFileName.c_str());
+			}
+			else
+			{
+				cacheLineString = "     " + cacheLineString;
+			}
 			cacheFile.open(cacheFileName, std::ofstream::app);
 			if (!cacheFile.is_open())
 			{
                 		cout << "Could not open disk caching file for writing, quitting..." << endl;
 				exit;
 			}
-			cacheFile << cacheLine.str().c_str();
+			cacheLineString.pop_back();
+			cacheFile << cacheLineString.c_str();
 			cacheFile.close();
 		}
 	}
@@ -408,6 +419,7 @@ void alnData::generateFeatureFile(string baseName)
 			getline(cacheFile,cacheLine);
 			featuresFileNew << cacheLine << endl;
 			cacheFile.close();
+			std::remove(cacheFileName.c_str());
 		}
 		return;
 	}
