@@ -396,7 +396,7 @@ void alnData::generateFeatureFile(string baseName)
 			cout << "Could not open features output file, quitting..." << endl;
 			exit;
 		}
-		for (int i = 0; i < this->species.size(), i++)
+		for (int i = 0; i < this->species.size(); i++)
 		{
 			cacheFileName = ".cache_" + this->species[i] + ".txt";
 			cacheFile.open(cacheFileName);
