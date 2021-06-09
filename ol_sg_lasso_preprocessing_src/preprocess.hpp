@@ -48,6 +48,6 @@ class alnData
 		map<string, string> seqs;
 		map<int, string> featureMap;
 		map<int, vector<int>> features;
-		map<int, string> featureCacheFiles;
+		vector<string> featureCacheFiles;
 
 };
