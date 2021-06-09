@@ -27,6 +27,7 @@ alnData::alnData()
 {
 	this->featureIndex = 1;
 	this->normalize = false;
+	this->useDiskCache = false;
 }
 
 void alnData::initialize(string speciesFile, string alnFileList)
