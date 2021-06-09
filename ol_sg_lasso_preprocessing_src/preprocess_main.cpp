@@ -62,6 +62,10 @@ int main(int argc, char *argv[])
 			{
 				data->setDownsampleBalance(true);
 			}
+			if (strcmp(argv[i], "useCaching") == 0)
+			{
+				data->setDiskCaching(true);
+			}
 		}
 	}
 	
