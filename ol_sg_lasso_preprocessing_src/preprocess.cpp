@@ -351,7 +351,7 @@ void alnData::processAln()
 			}
 			else
 			{
-				cacheLineString = "     " + cacheLineString;
+				cacheLineString = "	" + cacheLineString;
 			}
 			cacheFile.open(cacheFileName, std::ofstream::app);
 			if (!cacheFile.is_open())
