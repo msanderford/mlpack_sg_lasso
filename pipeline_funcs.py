@@ -11,7 +11,12 @@ from Bio import Phylo
 
 
 def analyze_results(args):
-	pass
+	if args.ensemble is not None and args.ensemble >= 1:
+		# Do analysis for ensemble model directory structure
+		pass
+	else:
+		# Do analysis for singular model directory structure
+		pass
 
 
 def generate_gene_prediction_table(weights_filename, responses_filename, groups_filename, features_filename, output_filename, gene_list):
