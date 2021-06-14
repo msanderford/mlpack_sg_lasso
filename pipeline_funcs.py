@@ -10,13 +10,37 @@ import xml.etree.ElementTree as ET
 from Bio import Phylo
 
 
-def analyze_results(args):
+def find_result_files(args, hypothesis_file_list):
 	if args.ensemble is not None and args.ensemble >= 1:
 		# Do analysis for ensemble model directory structure
 		pass
+		result_files = {}
+		for hypothesis_file in hypothesis_file_list:
+			hypothesis = os.path.splitext(os.path.basename(hypothesis_file))[0].replace("_hypothesis", "")
+			result_files[hypothesis] = {}
+			for i in range(0, args.ensemble_coverage):
+				result_files[hypothesis][i] = {}
+				for j in range(0, args.ensemble):
+					result_files[hypothesis][i][j] = {}
+					result_files[hypothesis][i][j]["weights"] = os.path.join(args.output,
+										     "{}_rep{}_part{}".format(args.output, i, j),
+										     "{}_mapped_feature_weights.txt".format(hypothesis))
+					result_files[hypothesis][i][j]["predictions"] = os.path.join(args.output,
+										     "{}_rep{}_part{}".format(args.output, i, j),
+										     "{}_gene_predictions.txt".format(hypothesis))
+									     
 	else:
 		# Do analysis for singular model directory structure
 		pass
+		result_files = {}
+		for hypothesis_file in hypothesis_file_list:
+			hypothesis = os.path.splitext(os.path.basename(hypothesis_file))[0].replace("_hypothesis", "")
+			result_files[hypothesis] = {}
+			result_files[hypothesis]["weights"] = os.path.join(args.output,
+									       "{}_mapped_feature_weights.txt".format(hypothesis))
+			result_files[hypothesis]["predictions"] = os.path.join(args.output,
+									       "{}_gene_predictions.txt".format(hypothesis))
+	return result_files
 
 
 def generate_gene_prediction_table(weights_filename, responses_filename, groups_filename, features_filename, output_filename, gene_list):
