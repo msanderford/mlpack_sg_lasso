@@ -10,6 +10,10 @@ import xml.etree.ElementTree as ET
 from Bio import Phylo
 
 
+def analyze_results(args):
+	pass
+
+
 def generate_gene_prediction_table(weights_filename, responses_filename, groups_filename, features_filename, output_filename, gene_list):
 	# Read weights, responses, and group indices files
 	model = xml_model_to_dict(weights_filename)
