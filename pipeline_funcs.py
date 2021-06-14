@@ -3,6 +3,7 @@ import os
 import subprocess
 import copy
 import time
+import random
 import shutil
 import numpy
 import xml.etree.ElementTree as ET
@@ -44,6 +45,30 @@ def generate_gene_prediction_table(weights_filename, responses_filename, groups_
 		file.write("SeqID\tResponse\tPrediction\t{}\n".format("\t".join(gene_list)))
 		for (seqid, gene_sums) in zip(seqlist, group_sums):
 			file.write("{}\t{}\t{}\t{}\n".format(seqid, responses[seqid], sum(gene_sums) + model["intercept"], "\t".join([str(x) for x in gene_sums])))
+
+
+# Takes a list of alignment files and splits it into randomly selected subsets of equal size and returns the filenames
+def split_gene_list(aln_list_filename, partitions):
+	partition_files = []
+	dirname = os.path.dirname(aln_list_filename)
+	basename = "{}_{}".format(os.path.splitext(os.path.basename(aln_list_filename))[0], random.randrange(100000,999999))	
+	with open(aln_list_filename, 'r') as file:
+		aln_file_list = [] #List
+		partitioned_file_list = [] #List of lists
+		for line in file:
+			aln_file_list.append(line.strip())
+	random.shuffle(aln_file_list)
+	partition_sizes = [0 for i in range(0, partitions)]
+	for i in range(0, len(aln_file_list)):
+		partition_sizes[i % partitions] += 1;
+	for i in range(0, partitions):
+		filename = "{}_partition_{}.txt".format(basename, i+1)
+		filename = os.path.join(dirname, filename)
+		with open(filename, 'w') as file:
+			for j in range(0, partition_sizes[i]):
+				file.write("{}\n".format(aln_file_list.pop()))
+		partition_files.append(filename)
+	return partition_files
 
 
 def xml_model_to_dict(model_filename):
