@@ -39,6 +39,8 @@ def main(args):
 			shutil.move(hypothesis_filename.replace(".txt","_out_feature_weights.xml"), args.output)
 			shutil.move(hypothesis_filename.replace("hypothesis.txt","gene_predictions.txt"), args.output)
 			shutil.move(hypothesis_filename.replace("hypothesis.txt", "mapped_feature_weights.txt"), args.output)
+	if args.analyze:
+		pf.analyze_results(args)
 
 
 if __name__ == '__main__':
@@ -54,6 +56,7 @@ if __name__ == '__main__':
 	parser.add_argument("--downsample_balance", help="Balance positive and negative response sets by downsampling the overpopulated set.", action='store_true', default=False)
 	parser.add_argument("--ensemble", help="Build gene-wise ensemble models, splitting the set of genes into N partitions for each run.", type=int, default=None)
 	parser.add_argument("--ensemble_coverage", help="Number of ensemble models to build. Each gene will be included in this many individual models.", type=int, default=5)
+	parser.add_argument("--analyze", help="Aggregate stats across various dimensions.", action='store_true', default=False)
 	args = parser.parse_args()
 	main(args)
 	# generate_gene_prediction_table(weights_filename, responses_filename, groups_filename, features_filename, output_filename)
