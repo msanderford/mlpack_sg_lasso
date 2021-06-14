@@ -1,3 +1,4 @@
+import os
 import argparse
 import shutil
 import pipeline_funcs as pf
@@ -8,7 +9,8 @@ def main(args):
 	if args.ensemble is not None and args.ensemble >= 1:
 		tempdir_list = []
 		for i in range(0, args.ensemble_coverage):
-			partitioned_aln_lists = pf.split_gene_list(args.aln_list)
+			partitioned_aln_lists = pf.split_gene_list(args.aln_list, args.ensemble)
+			j = 0
 			for part_aln_list in partitioned_aln_lists:
 				tempdir = "{}_rep{}_part{}".format(args.output, i, j)
 				tempdir_list.append(tempdir)
@@ -16,11 +18,15 @@ def main(args):
 				weights_file_list = pf.run_mlp(features_filename_list, groups_filename_list, response_filename_list, args.lambda1, args.lambda2)
 				pf.process_weights(weights_file_list, hypothesis_file_list, groups_filename_list, features_filename_list, gene_list)
 				for hypothesis_filename in hypothesis_file_list:
-					shutil.move(hypothesis_filename, args.output)
+					if i+1 == args.ensemble_coverage and j+1 == args.ensemble:
+						shutil.move(hypothesis_filename, args.output)
+					else:
+						shutil.copy(hypothesis_filename, args.output)
 					shutil.move(hypothesis_filename.replace(".txt","_out_feature_weights.xml"), args.output)
 					shutil.move(hypothesis_filename.replace("hypothesis.txt","gene_predictions.txt"), args.output)
 					shutil.move(hypothesis_filename.replace("hypothesis.txt", "mapped_feature_weights.txt"), args.output)
 				shutil.move(args.output, tempdir)
+				j += 1
 		os.mkdir(args.output)
 		for tempdir in tempdir_list:
 			shutil.move(tempdir, args.output)
