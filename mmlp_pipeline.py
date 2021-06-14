@@ -12,7 +12,7 @@ def main(args):
 			partitioned_aln_lists = pf.split_gene_list(args.aln_list, args.ensemble)
 			j = 0
 			for part_aln_list in partitioned_aln_lists:
-				tempdir = "{}_rep{}_part{}".format(args.output, i, j)
+				tempdir = "{}_rep{}_part{}".format(args.output, i+1, j+1)
 				tempdir_list.append(tempdir)
 				features_filename_list, groups_filename_list, response_filename_list, gene_list = pf.generate_input_matrices(part_aln_list, hypothesis_file_list, args)
 				weights_file_list = pf.run_mlp(features_filename_list, groups_filename_list, response_filename_list, args.lambda1, args.lambda2)
