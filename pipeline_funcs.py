@@ -77,7 +77,7 @@ def generate_gene_prediction_table(weights_filename, responses_filename, groups_
 	with open(output_filename, 'w') as file:
 		file.write("SeqID\tResponse\tPrediction\tIntercept\t{}\n".format("\t".join(gene_list)))
 		for (seqid, gene_sums) in zip(seqlist, group_sums):
-			file.write("{}\t{}\t{}\t{}\n".format(seqid, responses[seqid], sum(gene_sums) + model["intercept"], model["intercept"], "\t".join([str(x) for x in gene_sums])))
+			file.write("{}\t{}\t{}\t{}\t{}\n".format(seqid, responses[seqid], sum(gene_sums) + model["intercept"], model["intercept"], "\t".join([str(x) for x in gene_sums])))
 
 
 # Takes a list of alignment files and splits it into randomly selected subsets of equal size and returns the filenames
