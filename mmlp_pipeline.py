@@ -6,10 +6,10 @@ import pipeline_funcs as pf
 
 def main(args):
 	hypothesis_file_list = pf.generate_hypothesis_set(args.tree, args.nodelist, args.response)
-	if args.ensemble is not None and args.ensemble_parts >= 1:
+	if args.ensemble_parts is not None and args.ensemble_parts >= 1:
 		tempdir_list = []
 		for i in range(0, args.ensemble_coverage):
-			partitioned_aln_lists = pf.split_gene_list(args.aln_list, args.ensemble)
+			partitioned_aln_lists = pf.split_gene_list(args.aln_list, args.ensemble_parts)
 			j = 0
 			for part_aln_list in partitioned_aln_lists:
 				tempdir = "{}_rep{}_part{}".format(args.output, i+1, j+1)
