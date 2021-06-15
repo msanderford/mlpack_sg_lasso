@@ -43,6 +43,7 @@ def main(args):
 		result_files_list = pf.find_result_files(args, hypothesis_file_list)
 		print(result_files_list)
 		weights = pf.parse_result_files(args, result_files_list)
+		pf.analyze_ensemble_weights(args, weights)
 
 
 if __name__ == '__main__':
