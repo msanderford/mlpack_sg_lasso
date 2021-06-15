@@ -78,7 +78,7 @@ def analyze_ensemble_weights(args, weights):
 				counts[gene][feature] = sum([1 for x in weights[hypothesis][gene][feature] if abs(x)>0])
 			totals[gene] = sum(counts[gene].values())
 			scores[gene] = totals[gene]/len(counts[gene])
-		with open(outfile, 'r') as file:
+		with open(outfile, 'w') as file:
 			file.write("{}\t{}\t{}\n".format("Gene","Total Non-zero","Score"))
 			for gene in weights[hypothesis].keys():
 				file.write("{}\t{}\t{}\n".format(gene, totals[gene], scores[gene]))
