@@ -48,16 +48,16 @@ def parse_result_files(args, file_dict):
 	for hypothesis in file_dict.keys():
 		temp_weights = {}
 		last_gene = ""
-		for i in range(0, args.ensemble_coverage):
+		for i in range(1, args.ensemble_coverage+1):
 			weights = {}
-			for j in range(0, args.ensemble):
+			for j in range(1, args.ensemble+1):
 				with open(file_dict[hypothesis][i][j]["weights"], 'r') as file:
 					for line in file:
 						data = line.strip().split("\t")
 						rowname = data[0].split("_")
 						feature = "_".join(rowname[-2:])
 						gene = rowname.replace("_{}".format(feature), "")
-						if i == 0:
+						if i == 1:
 							if gene != last_gene:
 								last_gene = gene
 								weights[gene] = {}
