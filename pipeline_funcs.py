@@ -49,7 +49,6 @@ def parse_result_files(args, file_dict):
 		temp_weights = {}
 		last_gene = ""
 		for i in range(1, args.ensemble_coverage+1):
-			weights = {}
 			for j in range(1, args.ensemble+1):
 				with open(file_dict[hypothesis][i][j]["weights"], 'r') as file:
 					for line in file:
@@ -60,9 +59,9 @@ def parse_result_files(args, file_dict):
 						if i == 1:
 							if gene != last_gene:
 								last_gene = gene
-								weights[gene] = {}
-							weights[gene][feature] = []
-						weights[gene][feature].append(float(data[1]))
+								temp_weights[gene] = {}
+							temp_weights[gene][feature] = []
+						temp_weights[gene][feature].append(float(data[1]))
 		weights[hypothesis] = temp_weights
 	return weights
 
