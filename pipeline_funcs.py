@@ -43,6 +43,30 @@ def find_result_files(args, hypothesis_file_list):
 	return result_files
 
 
+def parse_result_files(args, file_dict):
+	weights = {}
+	for hypothesis in file_dict.keys():
+		temp_weights = {}
+		last_gene = ""
+		for i in range(0, args.ensemble_coverage):
+			weights = {}
+			for j in range(0, args.ensemble):
+				with open(file_dict[hypothesis][i][j]["weights"], 'r') as file:
+					for line in file:
+						data = line.strip().split("\t")
+						rowname = data[0].split("_")
+						feature = "_".join(rowname[-2:])
+						gene = rowname.replace("_{}".format(feature), "")
+						if i == 0:
+							if gene != last_gene:
+								last_gene = gene
+								weights[gene] = {}
+							weights[gene][feature] = []
+						weights[gene][feature].append(float(data[1]))
+		weights[hypothesis] = temp_weights
+	return weights
+
+
 def generate_gene_prediction_table(weights_filename, responses_filename, groups_filename, features_filename, output_filename, gene_list):
 	# Read weights, responses, and group indices files
 	model = xml_model_to_dict(weights_filename)
