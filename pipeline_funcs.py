@@ -56,7 +56,7 @@ def parse_result_files(args, file_dict):
 						data = line.strip().split("\t")
 						rowname = data[0].split("_")
 						feature = "_".join(rowname[-2:])
-						gene = rowname.replace("_{}".format(feature), "")
+						gene = data[0].replace("_{}".format(feature), "")
 						if i == 1:
 							if gene != last_gene:
 								last_gene = gene
