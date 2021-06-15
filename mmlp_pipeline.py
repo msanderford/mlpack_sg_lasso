@@ -6,7 +6,7 @@ import pipeline_funcs as pf
 
 def main(args):
 	hypothesis_file_list = pf.generate_hypothesis_set(args.tree, args.nodelist, args.response)
-	if args.ensemble is not None and args.ensemble >= 1:
+	if args.ensemble is not None and args.ensemble_parts >= 1:
 		tempdir_list = []
 		for i in range(0, args.ensemble_coverage):
 			partitioned_aln_lists = pf.split_gene_list(args.aln_list, args.ensemble)
@@ -18,7 +18,7 @@ def main(args):
 				weights_file_list = pf.run_mlp(features_filename_list, groups_filename_list, response_filename_list, args.lambda1, args.lambda2, args.method)
 				pf.process_weights(weights_file_list, hypothesis_file_list, groups_filename_list, features_filename_list, gene_list)
 				for hypothesis_filename in hypothesis_file_list:
-					if i+1 == args.ensemble_coverage and j+1 == args.ensemble:
+					if i+1 == args.ensemble_coverage and j+1 == args.ensemble_parts:
 						shutil.move(hypothesis_filename, args.output)
 					else:
 						shutil.copy(hypothesis_filename, args.output)
@@ -57,7 +57,7 @@ if __name__ == '__main__':
 	parser.add_argument("-o", "--output", help="Output directory.", type=str, default="output")
 	parser.add_argument("--upsample_balance", help="Balance positive and negative response sets by upsampling the underpopulated set.", action='store_true', default=False)
 	parser.add_argument("--downsample_balance", help="Balance positive and negative response sets by downsampling the overpopulated set.", action='store_true', default=False)
-	parser.add_argument("--ensemble", help="Build gene-wise ensemble models, splitting the set of genes into N partitions for each run.", type=int, default=None)
+	parser.add_argument("--ensemble_parts", help="Build gene-wise ensemble models, splitting the set of genes into N partitions for each run.", type=int, default=None)
 	parser.add_argument("--ensemble_coverage", help="Number of ensemble models to build. Each gene will be included in this many individual models.", type=int, default=5)
 	parser.add_argument("--analyze", help="Aggregate stats across various dimensions.", action='store_true', default=False)
 	parser.add_argument("--method", help="SGLasso type to use. Options are \"leastr\" or \"logistic\". Defaults to \"leastr\".", type=str, default="leastr")
