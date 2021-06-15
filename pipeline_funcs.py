@@ -66,6 +66,24 @@ def parse_result_files(args, file_dict):
 	return weights
 
 
+def analyze_ensemble_weights(args, weights):
+	for hypothesis in weights.keys():
+		counts = {}
+		totals = {}
+		scores = {}
+		outfile = os.path.join(args.output, "{}_weight_analysis.txt".format(hypothesis))
+		for gene in weights[hypothesis].keys():
+			counts[gene] = {}
+			for feature in weights[hypothesis][gene].keys():
+				counts[gene][feature] = sum([1 for x in weights[hypothesis][gene][feature] if abs(x)>0])
+			totals[gene] = sum(counts[gene])
+			scores[gene] = totals[gene]/len(counts[gene])
+		with open(outfile, 'r') as file:
+			file.write("{}\t{}\t{}\n".format("Gene","Total Non-zero","Score"))
+			for gene in weights[hypothesis].keys():
+				file.write("{}\t{}\t{}\n".format(gene, totals[gene], scores[gene]))
+
+
 def generate_gene_prediction_table(weights_filename, responses_filename, groups_filename, features_filename, output_filename, gene_list):
 	# Read weights, responses, and group indices files
 	model = xml_model_to_dict(weights_filename)
