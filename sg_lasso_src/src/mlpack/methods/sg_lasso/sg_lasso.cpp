@@ -334,6 +334,7 @@ std::cout << "m:" << m << " n:" << n << std::endl;
   parameters = x_row;
 
   std::cout << "Intercept: " << c << std::endl;
+  this->intercept_value = c;
 
 //std::cout << "15..." << std::endl;
   return x_row;

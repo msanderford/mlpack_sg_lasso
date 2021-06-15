@@ -311,6 +311,7 @@ std::cout << "m:" << m << " n:" << n << std::endl;
   arma::rowvec x_row = x.t();
 
   parameters = x_row;
+  this->intercept_value = 0;
 
 //std::cout << "15..." << std::endl;
   return x_row;

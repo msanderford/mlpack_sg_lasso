@@ -75,9 +75,9 @@ def generate_gene_prediction_table(weights_filename, responses_filename, groups_
 			group_sums.append(sums)
 	# Write gene predictions table
 	with open(output_filename, 'w') as file:
-		file.write("SeqID\tResponse\tPrediction\t{}\n".format("\t".join(gene_list)))
+		file.write("SeqID\tResponse\tPrediction\tIntercept\t{}\n".format("\t".join(gene_list)))
 		for (seqid, gene_sums) in zip(seqlist, group_sums):
-			file.write("{}\t{}\t{}\t{}\n".format(seqid, responses[seqid], sum(gene_sums) + model["intercept"], "\t".join([str(x) for x in gene_sums])))
+			file.write("{}\t{}\t{}\t{}\n".format(seqid, responses[seqid], sum(gene_sums) + model["intercept"], model["intercept"], "\t".join([str(x) for x in gene_sums])))
 
 
 # Takes a list of alignment files and splits it into randomly selected subsets of equal size and returns the filenames
@@ -115,7 +115,7 @@ def xml_model_to_dict(model_filename):
 	if xml_tree[0].tag != "model":
 		raise Exception("Unexpected model XML format")
 	for child1 in xml_tree[0]:
-		if child1.tag == "intercept":
+		if child1.tag == "intercept_value":
 			params["intercept"] = float(child1.text)
 		elif child1.tag == "lambda1":
 			params["lambda1"] = float(child1.text)
@@ -125,7 +125,6 @@ def xml_model_to_dict(model_filename):
 					params["weight_list"].append(float(child2.text))
 				else:
 					params[child2.tag] = child2.text
-	params["intercept"] = 0
 	return params
 
 
@@ -258,9 +257,15 @@ def generate_input_matrices(alnlist_filename, hypothesis_filename_list, args):
 		return [features_file_list, group_indices_file_list, response_file_list, gene_list]
 
 
-def run_mlp(features_filename_list, groups_filename_list, response_filename_list, sparsity, group_sparsity):
+def run_mlp(features_filename_list, groups_filename_list, response_filename_list, sparsity, group_sparsity, method):
+	if method == "leastr":
+		method = "mlpack_sg_lasso_leastr"
+	elif method == "logistic":
+		method = "mlpack_sg_lasso"
+	else:
+		raise Exception("Provided method name not recognized, please provide a valid method name.")
 	weights_file_list = []
-	mlp_exe = os.path.join(os.getcwd(), "mlpack-3.2.2", "build", "bin", "mlpack_sg_lasso_leastr")
+	mlp_exe = os.path.join(os.getcwd(), "mlpack-3.2.2", "build", "bin", method)
 	# Run sg_lasso for each response file in response_filename_list
 	for response_filename, features_filename, groups_filename in zip(response_filename_list, features_filename_list, groups_filename_list):
 		basename = str(os.path.splitext(os.path.basename(response_filename))[0]).replace("response_","")

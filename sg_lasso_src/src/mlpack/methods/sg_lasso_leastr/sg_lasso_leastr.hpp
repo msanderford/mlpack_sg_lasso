@@ -159,7 +159,7 @@ class SGLassoLeastR
   {
     ar & BOOST_SERIALIZATION_NVP(parameters);
     ar & BOOST_SERIALIZATION_NVP(lambda1);
-    ar & BOOST_SERIALIZATION_NVP(intercept);
+    ar & BOOST_SERIALIZATION_NVP(intercept_value);
   }
 
  private:
@@ -178,6 +178,7 @@ class SGLassoLeastR
 
   //! Indicates whether first parameter is intercept.
   bool intercept;
+  double intercept_value;
 };
 
 } // namespace regression
