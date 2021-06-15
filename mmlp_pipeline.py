@@ -30,6 +30,9 @@ def main(args):
 		os.mkdir(args.output)
 		for tempdir in tempdir_list:
 			shutil.move(tempdir, args.output)
+		result_files_list = pf.find_result_files(args, hypothesis_file_list)
+		weights = pf.parse_result_files(args, result_files_list)
+		pf.analyze_ensemble_weights(args, weights)
 	else:
 		features_filename_list, groups_filename_list, response_filename_list, gene_list = pf.generate_input_matrices(args.aln_list, hypothesis_file_list, args)
 		weights_file_list = pf.run_mlp(features_filename_list, groups_filename_list, response_filename_list, args.lambda1, args.lambda2, args.method)
@@ -39,10 +42,6 @@ def main(args):
 			shutil.move(hypothesis_filename.replace(".txt","_out_feature_weights.xml"), args.output)
 			shutil.move(hypothesis_filename.replace("hypothesis.txt","gene_predictions.txt"), args.output)
 			shutil.move(hypothesis_filename.replace("hypothesis.txt", "mapped_feature_weights.txt"), args.output)
-	if args.analyze:
-		result_files_list = pf.find_result_files(args, hypothesis_file_list)
-		weights = pf.parse_result_files(args, result_files_list)
-		pf.analyze_ensemble_weights(args, weights)
 
 
 if __name__ == '__main__':
@@ -58,7 +57,6 @@ if __name__ == '__main__':
 	parser.add_argument("--downsample_balance", help="Balance positive and negative response sets by downsampling the overpopulated set.", action='store_true', default=False)
 	parser.add_argument("--ensemble_parts", help="Build gene-wise ensemble models, splitting the set of genes into N partitions for each run.", type=int, default=None)
 	parser.add_argument("--ensemble_coverage", help="Number of ensemble models to build. Each gene will be included in this many individual models.", type=int, default=5)
-	parser.add_argument("--analyze", help="Aggregate stats across various dimensions.", action='store_true', default=False)
 	parser.add_argument("--method", help="SGLasso type to use. Options are \"leastr\" or \"logistic\". Defaults to \"leastr\".", type=str, default="leastr")
 	args = parser.parse_args()
 	main(args)
