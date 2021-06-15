@@ -11,7 +11,7 @@ from Bio import Phylo
 
 
 def find_result_files(args, hypothesis_file_list):
-	if args.ensemble is not None and args.ensemble >= 1:
+	if args.ensemble_parts is not None and args.ensemble_parts >= 1:
 		# Do analysis for ensemble model directory structure
 		pass
 		result_files = {}
@@ -20,7 +20,7 @@ def find_result_files(args, hypothesis_file_list):
 			result_files[hypothesis] = {}
 			for i in range(1, args.ensemble_coverage+1):
 				result_files[hypothesis][i] = {}
-				for j in range(1, args.ensemble+1):
+				for j in range(1, args.ensemble_parts+1):
 					result_files[hypothesis][i][j] = {}
 					result_files[hypothesis][i][j]["weights"] = os.path.join(args.output,
 										     "{}_rep{}_part{}".format(args.output, i, j),
@@ -49,7 +49,7 @@ def parse_result_files(args, file_dict):
 		temp_weights = {}
 		last_gene = ""
 		for i in range(1, args.ensemble_coverage+1):
-			for j in range(1, args.ensemble+1):
+			for j in range(1, args.ensemble_parts+1):
 				with open(file_dict[hypothesis][i][j]["weights"], 'r') as file:
 					for line in file:
 						data = line.strip().split("\t")
