@@ -41,7 +41,6 @@ def main(args):
 			shutil.move(hypothesis_filename.replace("hypothesis.txt", "mapped_feature_weights.txt"), args.output)
 	if args.analyze:
 		result_files_list = pf.find_result_files(args, hypothesis_file_list)
-		print(result_files_list)
 		weights = pf.parse_result_files(args, result_files_list)
 		pf.analyze_ensemble_weights(args, weights)
 
