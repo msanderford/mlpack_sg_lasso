@@ -18,9 +18,9 @@ def find_result_files(args, hypothesis_file_list):
 		for hypothesis_file in hypothesis_file_list:
 			hypothesis = os.path.splitext(os.path.basename(hypothesis_file))[0].replace("_hypothesis", "")
 			result_files[hypothesis] = {}
-			for i in range(0, args.ensemble_coverage):
+			for i in range(1, args.ensemble_coverage+1):
 				result_files[hypothesis][i] = {}
-				for j in range(0, args.ensemble):
+				for j in range(1, args.ensemble+1):
 					result_files[hypothesis][i][j] = {}
 					result_files[hypothesis][i][j]["weights"] = os.path.join(args.output,
 										     "{}_rep{}_part{}".format(args.output, i, j),
