@@ -79,6 +79,8 @@ int main(int argc, char *argv[])
 	data->generateResponseFile(basename);
 	cout << "Generating feature file..." <<endl;
 	data->generateFeatureFile(basename);
+	cout << "Generating missing sequences list..." <<endl;
+	data->generateMissingFile(basename);
 
 
 	return 0;

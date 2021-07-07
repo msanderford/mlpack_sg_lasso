@@ -87,7 +87,7 @@ def analyze_ensemble_weights(args, weights):
 	return score_tables
 
 
-def generate_gene_prediction_table(weights_filename, responses_filename, groups_filename, features_filename, output_filename, gene_list):
+def generate_gene_prediction_table(weights_filename, responses_filename, groups_filename, features_filename, output_filename, gene_list, missing_seqs):
 	# Read weights, responses, and group indices files
 	model = xml_model_to_dict(weights_filename)
 	seqlist = []
@@ -121,7 +121,10 @@ def generate_gene_prediction_table(weights_filename, responses_filename, groups_
 	with open(output_filename, 'w') as file:
 		file.write("SeqID\tResponse\tPrediction\tIntercept\t{}\n".format("\t".join(gene_list)))
 		for (seqid, gene_sums) in zip(seqlist, group_sums):
-			file.write("{}\t{}\t{}\t{}\t{}\n".format(seqid, responses[seqid], sum(gene_sums) + model["intercept"], model["intercept"], "\t".join([str(x) for x in gene_sums])))
+			for i in range(0, len(gene_sums)):
+				if (seqid, gene_list[i]) in missing_seqs:
+					gene_sums[i] = "N/A"
+			file.write("{}\t{}\t{}\t{}\t{}\n".format(seqid, responses[seqid], sum([x for x in gene_sums if x != "N/A"]) + model["intercept"], model["intercept"], "\t".join([str(x) for x in gene_sums])))
 	with open(str(output_filename).replace("_gene_predictions.txt", "_GSS.txt"), 'w') as file:
 		file.write("{}\t{}\n".format("Gene","GSS"))
 		for (gene, weights) in zip(gene_list, group_weights):
@@ -324,10 +327,11 @@ def run_mlp(features_filename_list, groups_filename_list, response_filename_list
 	return weights_file_list
 
 
-def process_weights(weights_file_list, hypothesis_file_list, groups_filename_list, features_filename_list, gene_list):
+def process_weights(weights_file_list, hypothesis_file_list, groups_filename_list, features_filename_list, gene_list, HSS, missing_seqs):
 	for (weights_filename, hypothesis_filename, groups_filename, features_filename) in zip(weights_file_list, hypothesis_file_list, groups_filename_list, features_filename_list):
-		generate_gene_prediction_table(weights_filename, hypothesis_filename, groups_filename, features_filename, str(hypothesis_filename).replace("_hypothesis.txt", "_gene_predictions.txt"), gene_list)
-		generate_mapped_weights_file(weights_filename, str(groups_filename).replace("group_indices_", "feature_mapping_"))
+		generate_gene_prediction_table(weights_filename, hypothesis_filename, groups_filename, features_filename, str(hypothesis_filename).replace("_hypothesis.txt", "_gene_predictions.txt"), gene_list, missing_seqs)
+		total_significance = generate_mapped_weights_file(weights_filename, str(groups_filename).replace("group_indices_", "feature_mapping_"))
+		HSS[hypothesis_filename] = HSS.get(hypothesis_filename, 0) + total_significance
 
 def generate_mapped_weights_file(weights_filename, feature_map_filename):
 	# Read weights and feature mapping files
@@ -354,4 +358,6 @@ def generate_mapped_weights_file(weights_filename, feature_map_filename):
 		file.write("{}\t{}\n".format("Position Name", "PSS"))
 		for posname in posname_list:
 			file.write("{}\t{}\n".format(posname, PSS[posname]))
+	# Return sum of all position significance scores
+	return sum(PSS.values())
 

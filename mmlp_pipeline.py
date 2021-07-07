@@ -8,6 +8,8 @@ import pipeline_funcs as pf
 
 def main(args):
 	hypothesis_file_list = pf.generate_hypothesis_set(args.tree, args.nodelist, args.response)
+	HSS = {}
+	missing_seqs = set()
 	if args.ensemble_parts is not None and args.ensemble_parts >= 1:
 		tempdir_list = []
 		for i in range(0, args.ensemble_coverage):
@@ -17,8 +19,12 @@ def main(args):
 				tempdir = "{}_rep{}_part{}".format(args.output, i+1, j+1)
 				tempdir_list.append(tempdir)
 				features_filename_list, groups_filename_list, response_filename_list, gene_list = pf.generate_input_matrices(part_aln_list, hypothesis_file_list, args)
+				with open(os.path.join(args.output, "missing_seqs_" + args.output + ".txt"), "r") as file:
+					for line in file:
+						data = line.strip().split("\t")
+						missing_seqs.add((data[1], os.path.splitext(os.path.basename(data[0]))[0]))
 				weights_file_list = pf.run_mlp(features_filename_list, groups_filename_list, response_filename_list, args.lambda1, args.lambda2, args.method)
-				pf.process_weights(weights_file_list, hypothesis_file_list, groups_filename_list, features_filename_list, gene_list)
+				pf.process_weights(weights_file_list, hypothesis_file_list, groups_filename_list, features_filename_list, gene_list, HSS, missing_seqs)
 				for hypothesis_filename in hypothesis_file_list:
 					if i+1 == args.ensemble_coverage and j+1 == args.ensemble_parts and not args.sparsify:
 						shutil.move(hypothesis_filename, args.output)
@@ -34,13 +40,21 @@ def main(args):
 		os.mkdir(args.output)
 		for tempdir in tempdir_list:
 			shutil.move(tempdir, args.output)
+		with open(os.path.join(args.output, "HSS.txt"), 'w') as file:
+			file.write("{}\t{}\n".format("Hypothesis", "HSS"))
+			for hypothesis_filename in hypothesis_file_list:
+				file.write("{}\t{}\n".format(hypothesis_filename.replace("_hypothesis.txt", ""), HSS[hypothesis_filename]))
 		result_files_list = pf.find_result_files(args, hypothesis_file_list)
 		weights = pf.parse_result_files(args, result_files_list)
 		return pf.analyze_ensemble_weights(args, weights)
 	else:
 		features_filename_list, groups_filename_list, response_filename_list, gene_list = pf.generate_input_matrices(args.aln_list, hypothesis_file_list, args)
+		with open(os.path.join(args.output, "missing_seqs_" + args.output + ".txt"), "r") as file:
+			for line in file:
+				data = line.strip().split("\t")
+				missing_seqs.add((data[1], os.path.splitext(os.path.basename(data[0]))[0]))
 		weights_file_list = pf.run_mlp(features_filename_list, groups_filename_list, response_filename_list, args.lambda1, args.lambda2, args.method)
-		pf.process_weights(weights_file_list, hypothesis_file_list, groups_filename_list, features_filename_list, gene_list)
+		pf.process_weights(weights_file_list, hypothesis_file_list, groups_filename_list, features_filename_list, gene_list, HSS, missing_seqs)
 		for hypothesis_filename in hypothesis_file_list:
 			shutil.move(hypothesis_filename, args.output)
 			shutil.move(hypothesis_filename.replace(".txt","_out_feature_weights.xml"), args.output)
@@ -48,6 +62,10 @@ def main(args):
 			shutil.move(hypothesis_filename.replace("hypothesis.txt", "mapped_feature_weights.txt"), args.output)
 			shutil.move(hypothesis_filename.replace("hypothesis.txt", "PSS.txt"), args.output)
 			shutil.move(hypothesis_filename.replace("hypothesis.txt", "GSS.txt"), args.output)
+		with open(os.path.join(args.output, "HSS.txt"), 'w') as file:
+			file.write("{}\t{}\n".format("Hypothesis", "HSS"))
+			for hypothesis_filename in hypothesis_file_list:
+				file.write("{}\t{}\n".format(hypothesis_filename.replace("_hypothesis.txt", ""), HSS[hypothesis_filename]))
 		return None
 
 

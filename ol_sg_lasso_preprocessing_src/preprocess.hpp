@@ -23,6 +23,7 @@ class alnData
 		void generateFeatureFile(string fileName);
 		void generateMappingFile(string fileName);
 		void generateGroupIndicesFile(string baseName);
+		void generateMissingFile(string baseName);
 		void normalizeFeatures(bool normalize);
 		void dropSingletons(bool ignoreSingletons);
 		void setCountThreshold(int countThreshold);
@@ -43,6 +44,7 @@ class alnData
 		string currentGene;
 		vector<string> species;
 		vector<string> groups;
+		vector<string> missingSeqs;
 		vector<vector<int>> groupIndices;
 		map<string, int> geneGroupIndex;
 		map<string, float> traits;

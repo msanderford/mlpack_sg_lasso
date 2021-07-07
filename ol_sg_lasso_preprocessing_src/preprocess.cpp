@@ -260,16 +260,17 @@ void alnData::readAln(string fastaFileName)
 	while (!tempSpecies.empty())
 	{
 		//If seqid is a duplication, set its sequence to the original
-		if (tempSpecies.at(0).find("_pos_dup") != std::string::npos || tempSpecies.at(0).find("_neg_dup") != std::string::npos)
+		if ((tempSpecies.at(0).find("_pos_dup") != std::string::npos || tempSpecies.at(0).find("_neg_dup") != std::string::npos) && this->seqs.find(tempSpecies.at(0).substr(0, found)) != this->seqs.end())
 		{
 			found = tempSpecies.at(0).find("_dup") - 4;
 			//bool found = (std::find(my_list.begin(), my_list.end(), my_var) != my_list.end());
 			this->seqs[tempSpecies.at(0)] = this->seqs[tempSpecies.at(0).substr(0, found)];
 			tempSpecies.erase(tempSpecies.begin());
 		}
-		//Else set its sequence to all indels
+		//Else set its sequence to all indels and add it to the missing seqs file
 		else
 		{
+			this->missingSeqs.push_back(fastaFileName + "\t" + tempSpecies.at(0));
 			this->seqs[tempSpecies.at(0)] = string(seqlen, '-');
 			tempSpecies.erase(tempSpecies.begin());
 		}
@@ -695,4 +696,20 @@ void alnData::generateGroupIndicesFile(string baseName)
 	}
 
 }
+
+void alnData::generateMissingFile(string baseName)
+{
+	string missingSeqsFileName = baseName + "/missing_seqs_" + baseName + ".txt";
+	ofstream missingSeqsFile (missingSeqsFileName);
+	if (missingSeqsFile.is_open())
+	{
+		for (int i = 0; i < this->missingSeqs.size(); i++)
+		{
+			missingSeqsFile << this->missingSeqs[i] << endl;
+		}
+	}
+	missingSeqsFile.close();
+}
+
+
 
