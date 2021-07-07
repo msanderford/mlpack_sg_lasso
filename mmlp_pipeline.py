@@ -1,6 +1,8 @@
 import os
 import argparse
 import shutil
+import math
+import copy
 import pipeline_funcs as pf
 
 
@@ -18,13 +20,15 @@ def main(args):
 				weights_file_list = pf.run_mlp(features_filename_list, groups_filename_list, response_filename_list, args.lambda1, args.lambda2, args.method)
 				pf.process_weights(weights_file_list, hypothesis_file_list, groups_filename_list, features_filename_list, gene_list)
 				for hypothesis_filename in hypothesis_file_list:
-					if i+1 == args.ensemble_coverage and j+1 == args.ensemble_parts:
+					if i+1 == args.ensemble_coverage and j+1 == args.ensemble_parts and not args.sparsify:
 						shutil.move(hypothesis_filename, args.output)
 					else:
 						shutil.copy(hypothesis_filename, args.output)
 					shutil.move(hypothesis_filename.replace(".txt","_out_feature_weights.xml"), args.output)
 					shutil.move(hypothesis_filename.replace("hypothesis.txt","gene_predictions.txt"), args.output)
 					shutil.move(hypothesis_filename.replace("hypothesis.txt", "mapped_feature_weights.txt"), args.output)
+					shutil.move(hypothesis_filename.replace("hypothesis.txt", "PSS.txt"), args.output)
+					shutil.move(hypothesis_filename.replace("hypothesis.txt", "GSS.txt"), args.output)
 				shutil.move(args.output, tempdir)
 				j += 1
 		os.mkdir(args.output)
@@ -32,7 +36,7 @@ def main(args):
 			shutil.move(tempdir, args.output)
 		result_files_list = pf.find_result_files(args, hypothesis_file_list)
 		weights = pf.parse_result_files(args, result_files_list)
-		pf.analyze_ensemble_weights(args, weights)
+		return pf.analyze_ensemble_weights(args, weights)
 	else:
 		features_filename_list, groups_filename_list, response_filename_list, gene_list = pf.generate_input_matrices(args.aln_list, hypothesis_file_list, args)
 		weights_file_list = pf.run_mlp(features_filename_list, groups_filename_list, response_filename_list, args.lambda1, args.lambda2, args.method)
@@ -40,8 +44,11 @@ def main(args):
 		for hypothesis_filename in hypothesis_file_list:
 			shutil.move(hypothesis_filename, args.output)
 			shutil.move(hypothesis_filename.replace(".txt","_out_feature_weights.xml"), args.output)
-			shutil.move(hypothesis_filename.replace("hypothesis.txt","gene_predictions.txt"), args.output)
+			shutil.move(hypothesis_filename.replace("hypothesis.txt", "gene_predictions.txt"), args.output)
 			shutil.move(hypothesis_filename.replace("hypothesis.txt", "mapped_feature_weights.txt"), args.output)
+			shutil.move(hypothesis_filename.replace("hypothesis.txt", "PSS.txt"), args.output)
+			shutil.move(hypothesis_filename.replace("hypothesis.txt", "GSS.txt"), args.output)
+		return None
 
 
 if __name__ == '__main__':
@@ -57,9 +64,70 @@ if __name__ == '__main__':
 	parser.add_argument("--downsample_balance", help="Balance positive and negative response sets by downsampling the overpopulated set.", action='store_true', default=False)
 	parser.add_argument("--ensemble_parts", help="Build gene-wise ensemble models, splitting the set of genes into N partitions for each run.", type=int, default=None)
 	parser.add_argument("--ensemble_coverage", help="Number of ensemble models to build. Each gene will be included in this many individual models.", type=int, default=5)
+	parser.add_argument("--sparsify", help="Iteratively increase sparsity until selected set of genes fits in one partition.", action='store_true', default=False)
 	parser.add_argument("--method", help="SGLasso type to use. Options are \"leastr\" or \"logistic\". Defaults to \"leastr\".", type=str, default="leastr")
 	args = parser.parse_args()
-	main(args)
+	score_tables = main(args)
+	gene_target = None
+	if args.sparsify and score_tables is not None:
+		args_original = copy.deepcopy(args)
+		output_folder = args.output
+		aln_list_dir = os.path.dirname(args.aln_list)
+		aln_list_basename = os.path.splitext(os.path.basename(args.aln_list))[0]
+		aln_file_list = {}
+		with open(args.aln_list, 'r') as file:
+			for line in file:
+				basename = os.path.splitext(os.path.basename(line.strip()))[0]
+				if basename in aln_file_list:
+					raise Exception("Found multiple alignment files with identical basename {}.".format(basename))
+				aln_file_list[basename] = line.strip()
+		for hypothesis in score_tables.keys():
+			args = copy.deepcopy(args_original)
+			if gene_target is None:
+				gene_target = math.ceil(len(score_tables[hypothesis])/args.ensemble_parts)
+			elif gene_target != math.ceil(len(score_tables[hypothesis])/args.ensemble_parts):
+				raise Exception("Mismatched gene counts between hypotheses.")
+			selected_count = sum([1 for val in score_tables[hypothesis].values() if val[0] > 0])
+			counter = 1
+			final_round = False
+			shutil.move("{}_hypothesis.txt".format(hypothesis), "{}.txt".format(hypothesis))
+			while selected_count > gene_target or final_round:
+				# Generate new aln_list file and point args.aln_list at it
+				aln_list_filename = os.path.join(aln_list_dir, "{}_{}_{}.txt".format(aln_list_basename, hypothesis, counter))
+				with open(aln_list_filename, 'w') as file:
+					for gene in score_tables[hypothesis].keys():
+						if score_tables[hypothesis][gene][0] > 0:
+							file.write("{}\n".format(aln_file_list[gene]))
+				args.aln_list = aln_list_filename
+				# Also point --response at this hypothesis' response file
+				args.response = "{}.txt".format(hypothesis)
+				# args.output = os.path.join(output_folder, "{}_sparsify_round{}".format(hypothesis, counter))
+				args.output = "{}_sparsify_round{}".format(hypothesis, counter)
+				# temp_score_tables = main(args)
+				if final_round:
+					args.output = "{}_sparsify_final".format(hypothesis)
+					args.lambda1 = 10**-6
+					args.lambda2 = 10**-6
+					args.ensemble_parts = 1
+					args.ensemble_coverage = 1
+				score_tables.update(main(args))
+				shutil.move(args.output, output_folder)
+				new_selected_count = sum([1 for val in score_tables[hypothesis].values() if val[0] > 0])
+				if not final_round and new_selected_count == selected_count:
+					# This round didn't increase sparsity, so increase group sparsity parameter for the next round
+					print("The number of selected genes was unchanged, increasing group sparsity parameter from {} to {}.".format(args.lambda2, args.lambda2 * 1.2))
+					args.lambda2 = args.lambda2 * 1.2
+				else:
+					selected_count = new_selected_count
+				if selected_count <= gene_target and not final_round:
+					final_round = True
+				else:
+					final_round = False
+				counter += 1
+			shutil.move("{}_hypothesis.txt".format(hypothesis), output_folder)
+			if os.path.exists("{}.txt".format(hypothesis)):
+				os.remove("{}.txt".format(hypothesis))
+
 	# generate_gene_prediction_table(weights_filename, responses_filename, groups_filename, features_filename, output_filename)
 	# if False:
 	# 	pf.generate_gene_prediction_table("angiosperm_out_feature_weights.xml", "angiosperm_20spec_pred.txt", "angiosperm_input/group_indices_angiosperm_input.txt", "angiosperm_input/feature_angiosperm_input.txt", "test_output.txt")

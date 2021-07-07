@@ -67,6 +67,7 @@ def parse_result_files(args, file_dict):
 
 
 def analyze_ensemble_weights(args, weights):
+	score_tables = {}
 	for hypothesis in weights.keys():
 		counts = {}
 		totals = {}
@@ -82,6 +83,8 @@ def analyze_ensemble_weights(args, weights):
 			file.write("{}\t{}\t{}\n".format("Gene","Total Non-zero","Score"))
 			for gene in weights[hypothesis].keys():
 				file.write("{}\t{}\t{}\n".format(gene, totals[gene], scores[gene]))
+		score_tables[hypothesis] = {gene:(totals[gene], scores[gene]) for gene in weights[hypothesis].keys()}
+	return score_tables
 
 
 def generate_gene_prediction_table(weights_filename, responses_filename, groups_filename, features_filename, output_filename, gene_list):
@@ -119,6 +122,10 @@ def generate_gene_prediction_table(weights_filename, responses_filename, groups_
 		file.write("SeqID\tResponse\tPrediction\tIntercept\t{}\n".format("\t".join(gene_list)))
 		for (seqid, gene_sums) in zip(seqlist, group_sums):
 			file.write("{}\t{}\t{}\t{}\t{}\n".format(seqid, responses[seqid], sum(gene_sums) + model["intercept"], model["intercept"], "\t".join([str(x) for x in gene_sums])))
+	with open(str(output_filename).replace("_gene_predictions.txt", "_GSS.txt"), 'w') as file:
+		file.write("{}\t{}\n".format("Gene","GSS"))
+		for (gene, weights) in zip(gene_list, group_weights):
+			file.write("{}\t{}\n".format(gene, str(sum(numpy.abs(weights)))))
 
 
 # Takes a list of alignment files and splits it into randomly selected subsets of equal size and returns the filenames
@@ -324,6 +331,9 @@ def process_weights(weights_file_list, hypothesis_file_list, groups_filename_lis
 
 def generate_mapped_weights_file(weights_filename, feature_map_filename):
 	# Read weights and feature mapping files
+	PSS = {}
+	posname_list = []
+	last_posname = ""
 	model = xml_model_to_dict(weights_filename)
 	feature_map = {}
 	output_filename = str(weights_filename).replace("_hypothesis_out_feature_weights.xml", "_mapped_feature_weights.txt")
@@ -335,4 +345,13 @@ def generate_mapped_weights_file(weights_filename, feature_map_filename):
 	with open(output_filename, 'w') as file:
 		for i in range(0, len(model["weight_list"])):
 			file.write("{}\t{}\n".format(feature_map[i+1], model["weight_list"][i]))
+			posname = feature_map[i + 1][0:-2]
+			if posname != last_posname:
+				posname_list.append(posname)
+				last_posname = posname
+			PSS[posname] = PSS.get(posname, 0.0) + abs(model["weight_list"][i])
+	with open(str(output_filename).replace("_mapped_feature_weights.txt", "_PSS.txt"), 'w') as file:
+		file.write("{}\t{}\n".format("Position Name", "PSS"))
+		for posname in posname_list:
+			file.write("{}\t{}\n".format(posname, PSS[posname]))
 
