@@ -52,6 +52,7 @@ class SGLassoLeastR
                    const arma::rowvec& responses,
                    const arma::mat& weights,
                    double* lambda,
+                   std::map<std::string, std::string> slep_opts,
                    const bool intercept = true);
 
   /**
