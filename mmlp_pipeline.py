@@ -23,7 +23,7 @@ def main(args):
 					for line in file:
 						data = line.strip().split("\t")
 						missing_seqs.add((data[1], os.path.splitext(os.path.basename(data[0]))[0]))
-				weights_file_list = pf.run_mlp(features_filename_list, groups_filename_list, response_filename_list, args.lambda1, args.lambda2, args.method)
+				weights_file_list = pf.run_mlp(features_filename_list, groups_filename_list, response_filename_list, args.lambda1, args.lambda2, args.method, args.slep_opts)
 				pf.process_weights(weights_file_list, hypothesis_file_list, groups_filename_list, features_filename_list, gene_list, HSS, missing_seqs)
 				for hypothesis_filename in hypothesis_file_list:
 					if i+1 == args.ensemble_coverage and j+1 == args.ensemble_parts and not args.sparsify:
@@ -53,7 +53,7 @@ def main(args):
 			for line in file:
 				data = line.strip().split("\t")
 				missing_seqs.add((data[1], os.path.splitext(os.path.basename(data[0]))[0]))
-		weights_file_list = pf.run_mlp(features_filename_list, groups_filename_list, response_filename_list, args.lambda1, args.lambda2, args.method)
+		weights_file_list = pf.run_mlp(features_filename_list, groups_filename_list, response_filename_list, args.lambda1, args.lambda2, args.method, args.slep_opts)
 		pf.process_weights(weights_file_list, hypothesis_file_list, groups_filename_list, features_filename_list, gene_list, HSS, missing_seqs)
 		for hypothesis_filename in hypothesis_file_list:
 			shutil.move(hypothesis_filename, args.output)
@@ -84,6 +84,7 @@ if __name__ == '__main__':
 	parser.add_argument("--ensemble_coverage", help="Number of ensemble models to build. Each gene will be included in this many individual models.", type=int, default=5)
 	parser.add_argument("--sparsify", help="Iteratively increase sparsity until selected set of genes fits in one partition.", action='store_true', default=False)
 	parser.add_argument("--method", help="SGLasso type to use. Options are \"leastr\" or \"logistic\". Defaults to \"leastr\".", type=str, default="leastr")
+	parser.add_argument("--slep_opts", help="File of tab-separated name-value pairs (one per line) to specify SLEP options.", type=str, default=None)
 	args = parser.parse_args()
 	score_tables = main(args)
 	gene_target = None
