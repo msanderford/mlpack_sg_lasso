@@ -52,6 +52,7 @@ class SGLasso
                    const arma::rowvec& responses,
                    const arma::mat& weights,
                    double* lambda,
+                   std::map<std::string, std::string> slep_opts,
                    const bool intercept = true);
 
   /**
@@ -93,6 +94,7 @@ class SGLasso
   arma::rowvec& Train(const arma::mat& features,
                const arma::rowvec& responses,
                const arma::mat& weights,
+               std::map<std::string, std::string> slep_opts,
                const bool intercept = true);
 
   /**
