@@ -55,7 +55,7 @@ PARAM_STRING_IN("fastaFile", "FASTA alignment to be converted to one-hot encoded
 // This is the future name of the parameter.
 PARAM_MODEL_OUT(SGLasso, "feature_weights", "File of learned feature weights.", "weights");
 
-int processFasta(string filename);
+map<string, string> processFasta(string filename);
 
 static void mlpackMain()
 {
@@ -77,9 +77,9 @@ static void mlpackMain()
   if (computeModel)
   {
 	string fastaFileName = CLI::GetParam<string>("fastaFile");
-	int testVal = processFasta(fastaFileName);
+	//int testVal = processFasta(fastaFileName);
 
-	std::cout << "processFasta exit status: " << testVal << std::endl;
+	//std::cout << "processFasta exit status: " << testVal << std::endl;
 
     Timer::Start("load_features");
     features = std::move(CLI::GetParam<mat>("features"));
@@ -102,7 +102,7 @@ static void mlpackMain()
     Timer::Stop("load_opts_ind");
 
     Timer::Start("sparse_group_lasso");
-    sgl = new SGLasso(features, responses, opts_ind, lambda);
+    sgl = new SGLasso(features, responses, opts_ind, lambda, processFasta(fastaFileName));
     Timer::Stop("sparse_group_lasso");
   }
 
@@ -113,8 +113,9 @@ static void mlpackMain()
 }
 
 
-int processFasta(string filename)
+map<string, string> processFasta(string filename)
 {
+  map<string, string> slep_opts;
   std::cout << "Processing FASTA file: " << filename << "..." << std::endl;
 
   string line;
@@ -122,6 +123,7 @@ int processFasta(string filename)
 
   if (fastaFile.is_open())
   {
+  /*
      int i = 0;
      while (getline(fastaFile, line))
      {
@@ -143,7 +145,21 @@ int processFasta(string filename)
            i = i + 1;
         }
      }
-     fastaFile.close();
+  */
+    int splitpos;
+    string opt_key;
+    while (getline(fastaFile, line))
+    {
+      splitpos = line.find("\t");
+      if (splitpos != std::string::npos)
+      {
+        opt_key = line.substr(0, line.find("\t"));
+        slep_opts[opt_key] = line.substr(line.find("\t"), std::string::npos);
+      }
+    }	
+  fastaFile.close();
+
+
 //     for (int j = 0; j < i; j = j + 1)
 //     {
 //        std::cout << speciesIds[j] << ":" << seqs[j] << std::endl;
@@ -151,5 +167,5 @@ int processFasta(string filename)
 
   }
 
-  return 1;
+  return slep_opts;
 }
