@@ -27,11 +27,12 @@ SGLasso::SGLasso(const arma::mat& features,
                                    const arma::rowvec& responses,
                                    const arma::mat& weights,
                                    double* lambda,
+                                   std::map<std::string, std::string> slep_opts,
                                    const bool intercept) :
     lambda(lambda),
     intercept(intercept)
 {
-  Train(features, responses, weights, intercept);
+  Train(features, responses, weights, slep_opts, intercept);
 }
 
 //double SGLasso::Train(const arma::mat& features,
@@ -44,6 +45,7 @@ SGLasso::SGLasso(const arma::mat& features,
 arma::rowvec& SGLasso::Train(const arma::mat& features,
                                const arma::rowvec& responses,
                                const arma::mat& weights,
+                               std::map<std::string, std::string> slep_opts,
                                const bool intercept)
 {
   this->intercept = intercept;
@@ -55,9 +57,32 @@ arma::rowvec& SGLasso::Train(const arma::mat& features,
   int opts_nFlag = 0;
   int opts_rFlag = 1;
   int opts_mFlag = 0;
-  int opts_rStartNum = opts_maxIter;
   double opts_tol = 0.0001;
   arma::mat opts_ind = weights;
+
+  //Overwrite default options with those found in slep_opts file.
+  if ( slep_opts.find("maxIter") != slep_opts.end() ) {
+	opts_maxIter = std::stoi(slep_opts["maxIter"]);
+  }
+  int opts_rStartNum = opts_maxIter;
+  if ( slep_opts.find("init") != slep_opts.end() ) {
+	opts_init = std::stoi(slep_opts["init"]);
+  }
+  if ( slep_opts.find("tFlag") != slep_opts.end() ) {
+	opts_tFlag = std::stoi(slep_opts["tFlag"]);
+  }
+  if ( slep_opts.find("nFlag") != slep_opts.end() ) {
+	opts_nFlag = std::stoi(slep_opts["nFlag"]);
+  }
+  if ( slep_opts.find("rFlag") != slep_opts.end() ) {
+	opts_rFlag = std::stoi(slep_opts["rFlag"]);
+  }
+  if ( slep_opts.find("mFlag") != slep_opts.end() ) {
+	opts_mFlag = std::stoi(slep_opts["mFlag"]);
+  }
+  if ( slep_opts.find("tol") != slep_opts.end() ) {
+	opts_tol = std::stod(slep_opts["tol"]);
+  }
 
   /*
    * We want to calculate the a_i coefficients of:
