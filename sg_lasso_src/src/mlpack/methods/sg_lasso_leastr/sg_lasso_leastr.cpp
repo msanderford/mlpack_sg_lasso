@@ -32,7 +32,7 @@ SGLassoLeastR::SGLassoLeastR(const arma::mat& features,
     lambda(lambda),
     intercept(intercept)
 {
-  Train(features, responses, weights, intercept);
+  Train(features, responses, weights, slep_opts, intercept);
 }
 
 //double SGLassoLeastR::Train(const arma::mat& features,
@@ -45,6 +45,7 @@ SGLassoLeastR::SGLassoLeastR(const arma::mat& features,
 arma::rowvec& SGLassoLeastR::Train(const arma::mat& features,
                                const arma::rowvec& responses,
                                const arma::mat& weights,
+                               std::map<std::string, std::string> slep_opts,
                                const bool intercept)
 {
   this->intercept = intercept;
@@ -59,6 +60,12 @@ arma::rowvec& SGLassoLeastR::Train(const arma::mat& features,
   int opts_rStartNum = opts_maxIter;
   double opts_tol = 0.0001;
   arma::mat opts_ind = weights;
+
+  //Overwrite default options with those found in slep_opts file.
+  if ( slep_opts.find("maxIter") != slep_opts.end() ) {
+	opts_maxIter = std::stoi(slep_opts["maxIter"]);
+  }
+
 
   /*
    * We want to calculate the a_i coefficients of:
