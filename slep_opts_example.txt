@@ -1,0 +1,3 @@
+maxIter	10000
+tFlag	5
+tol	0.000001
