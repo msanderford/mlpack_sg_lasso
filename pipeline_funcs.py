@@ -308,7 +308,7 @@ def generate_input_matrices(alnlist_filename, hypothesis_filename_list, args):
 		return [features_file_list, group_indices_file_list, response_file_list, gene_list]
 
 
-def run_mlp(features_filename_list, groups_filename_list, response_filename_list, sparsity, group_sparsity, method):
+def run_mlp(features_filename_list, groups_filename_list, response_filename_list, sparsity, group_sparsity, method, slep_opts):
 	if method == "leastr":
 		method = "mlpack_sg_lasso_leastr"
 	elif method == "logistic":
@@ -320,7 +320,10 @@ def run_mlp(features_filename_list, groups_filename_list, response_filename_list
 	# Run sg_lasso for each response file in response_filename_list
 	for response_filename, features_filename, groups_filename in zip(response_filename_list, features_filename_list, groups_filename_list):
 		basename = str(os.path.splitext(os.path.basename(response_filename))[0]).replace("response_","")
-		mlp_cmd = "{} -v -f {} -z {} -y {} -n {} -r {} -w {}".format(mlp_exe, features_filename, sparsity, group_sparsity, groups_filename, response_filename, basename + "_out_feature_weights.xml")
+		if slep_opts is None:
+			mlp_cmd = "{} -v -f {} -z {} -y {} -n {} -r {} -w {}".format(mlp_exe, features_filename, sparsity, group_sparsity, groups_filename, response_filename, basename + "_out_feature_weights.xml")
+		else:
+			mlp_cmd = "{} -v -f {} -z {} -y {} -n {} -r {} -s {} -w {}".format(mlp_exe, features_filename, sparsity, group_sparsity, groups_filename, response_filename, slep_opts, basename + "_out_feature_weights.xml")
 		print(mlp_cmd)
 		subprocess.call(mlp_cmd.split(" "), stderr=subprocess.STDOUT)
 		weights_file_list.append(basename + "_out_feature_weights.xml")
