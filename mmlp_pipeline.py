@@ -12,6 +12,7 @@ def main(args):
 	HSS = {}
 	missing_seqs = set()
 	merged_rep_predictions_files = {hypothesis_filename:[] for hypothesis_filename in hypothesis_file_list}
+	gcv_files = []
 	if args.ensemble_parts is not None and args.ensemble_parts >= 1:
 		tempdir_list = []
 		merged_parts_prediction_files = {hypothesis_filename:[] for hypothesis_filename in hypothesis_file_list}
@@ -48,10 +49,15 @@ def main(args):
 		if not args.sparsify:
 			for hypothesis_filename in hypothesis_file_list:
 				merged_rep_predictions_files[hypothesis_filename] = gcv.merge_predictions(merged_parts_prediction_files[hypothesis_filename],hypothesis_filename.replace("hypothesis.txt","merged_gene_predictions_final.txt"))
+				gcv_files.extend(merged_parts_prediction_files[hypothesis_filename])
+				gcv_files.append(merged_rep_predictions_files[hypothesis_filename])
+				gcv_files.append(merged_rep_predictions_files[hypothesis_filename].replace("final.txt","final.png"))
 				gcv.main(merged_rep_predictions_files[hypothesis_filename])
 		os.mkdir(args.output)
 		for tempdir in tempdir_list:
 			shutil.move(tempdir, args.output)
+		for file in gcv_files:
+			shutil.move(file, args.output)
 		with open(os.path.join(args.output, "HSS.txt"), 'w') as file:
 			file.write("{}\t{}\n".format("Hypothesis", "HSS"))
 			for hypothesis_filename in hypothesis_file_list:
