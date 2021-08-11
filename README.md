@@ -123,7 +123,9 @@ Finally, when running in ensemble mode, the --sparsify argument may be added, wh
 	python3.9 mmlp_pipeline.py sample_files/mmlp_test.nwk sample_files/angiosperm_100_sample_alns.txt -o sample_output --ensemble_parts 5 --ensemble_coverage 3 --sparsify
 
 
-#SGLASSO Settings
+# SGLASSO Settings
+
+While using the pipeline, the argument "--method logistic" may be used to perform logistic regression instead of least squares.
 
 Additional parameters for the SGLASSO program can be set by creating an options file like the included slep_opts_example.txt file.
 
