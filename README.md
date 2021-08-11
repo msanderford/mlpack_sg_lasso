@@ -25,7 +25,7 @@ To build everything, do the following:
 sample usage:
 
 	cd sample_files
-	../mlpack-3.2.2/build/bin/preprocess angiosperm_20spec_pred.txt angiosperm_100_sample_alns.txt angiosperm_input n ct 2
+	../mlpack-3.2.2/build/bin/preprocess angiosperm_20spec_pred.txt angiosperm_100_sample_alns.txt angiosperm_input
 	mv angiosperm_input ..
 	cd ..
 
@@ -98,10 +98,6 @@ Simple commands to remove the XML formatting, merge the two, and remove all feat
 
 The pipeline is implemented as a python script which takes a set of gene alignments and a newick tree with at least one named internal node then, for each named internal node, creates a model predicting the chance that a given sequence descends from that node, and finally applies each predictive model to each input sequence and generates a table of predictive values grouped by gene for each sequence.
 
-sample usage:
-
-	python3.9 mmlp_pipeline.py sample_files/mmlp_test.nwk sample_files/angiosperm_100_sample_alns.txt -o sample_output
-
 In order to make a local installation of python 3.9.5 on the cluster and install the required python packages, use the following commands:
 
 	wget https://www.python.org/ftp/python/3.9.5/Python-3.9.5.tgz
@@ -110,4 +106,27 @@ In order to make a local installation of python 3.9.5 on the cluster and install
 	./configure --enable-optimizations --with-ensurepip=install --prefix=$HOME
 	make -j 8
 	make altinstall
-	python3.9 -m pip install biopython
+	python3.9 -m pip install biopython matplotlib
+
+sample usage:
+
+	python3.9 mmlp_pipeline.py sample_files/mmlp_test.nwk sample_files/angiosperm_100_sample_alns.txt -o sample_output
+
+Additionally, the phylogeny testing pipeline can be run in ensemble mode, which will randomly partition the alignment files into N partitions (--ensemble_parts) and build a model with each partition separately, then repeat this process M times (--ensemble_coverage), aggregating the results to analyze the importance of each gene.
+
+sample usage:
+
+	python3.9 mmlp_pipeline.py sample_files/mmlp_test.nwk sample_files/angiosperm_100_sample_alns.txt -o sample_output --ensemble_parts 5 --ensemble_coverage 3
+
+Finally, when running in ensemble mode, the --sparsify argument may be added, which will cause the pipeline to run the analysis with an increasing group sparsity parameter until the number of genes assigned non-zero weights will fit into a single partition (i.e. if --ensemble_parts is set to 5, the pipeline will remove 80% of the genes). Once the set of selected genes reaches the threshold, it will perform ridge regression to assign a final set of weights to features in those genes.
+
+	python3.9 mmlp_pipeline.py sample_files/mmlp_test.nwk sample_files/angiosperm_100_sample_alns.txt -o sample_output --ensemble_parts 5 --ensemble_coverage 3 --sparsify
+
+
+#SGLASSO Settings
+
+Additional parameters for the SGLASSO program can be set by creating an options file like the included slep_opts_example.txt file.
+
+To provide your options file to the pipeline, use the argument "--slep_opts slep_opts_example.txt".
+
+If using the mlpack_sg_lasso executables directly, your options file can be specified by adding the argument "-s slep_opts_example.txt".
