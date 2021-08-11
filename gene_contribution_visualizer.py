@@ -74,7 +74,7 @@ def main(predictions_table, lead_cols=4, response_idx=2, prediction_idx=3, outpu
 	plt.savefig(output, dpi=DPI, bbox_inches='tight')
 
 	
-def merge_part_predictions(file_list):
+def merge_predictions(file_list, output_filename=None):
 	seqid_list = None
 	data = {}
 	headers = {}
@@ -118,7 +118,8 @@ def merge_part_predictions(file_list):
 		print("Field:{}\tLength:{}\tShape:{}".format(pair[0],len(pair[1]), pair[1].shape))
 #	merged_data = np.rec.fromarrays(col_list, names=",".join(output_header))
 	merged_data = np.hstack(tuple(col_list))
-	output_filename="testing.txt"
+	if output_filename is None:
+		output_filename="testing.txt"
 	print(len(output_header))
 	print(merged_data.dtype)
 	print(merged_data.shape)
@@ -127,9 +128,6 @@ def merge_part_predictions(file_list):
 #	np.savetxt(output_filename, merged_data, delimiter="\t")
 	return output_filename
 
-
-def merge_rep_predictions(file_list):
-	pass
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description="Gene contribution visualizer for ESL pipeline.")
