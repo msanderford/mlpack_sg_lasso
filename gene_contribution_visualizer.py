@@ -81,7 +81,7 @@ def merge_part_predictions(file_list):
 	fields = set()
 	for predictions_table in file_list:
 		with open(predictions_table, 'r') as file:
-			headers[predictions_table] = file.readline().split("\t")
+			headers[predictions_table] = [val.strip() for val in file.readline().split("\t")]
 			for field in headers[predictions_table]:
 				fields.add(field)
 			file.seek(0)
@@ -91,21 +91,35 @@ def merge_part_predictions(file_list):
 					raise Exception("Cannot combine prediction tables for differing sequence sets.")
 			else:
 				seqid_list = np.array([[val[0] for val in data[predictions_table]]]).T
-	output_header = list(headers.values())[0]
+	output_header = copy.copy(list(headers.values())[0])
 	for field in list(fields):
 		if field not in output_header:
 			output_header.append(field)
 	for predictions_table in file_list:
 		data[predictions_table] = np.asarray([list(val)[1:] for val in data[predictions_table]], dtype="float")
+#		print(headers[predictions_table])
 		headers[predictions_table] = headers[predictions_table][1:]
-	for field in fields:
+		print(headers[predictions_table])
+	for field in output_header:
 		if field=="SeqID":
-			merged_data = seqid_list
+			#merged_data = seqid_list
+			col_list = [seqid_list]
 		else:
-			cols = np.array([data[predictions_table][:,headers[predictions_table].index(field)] for predictions_table in file_list])
-			#col = numpy.mean(cols, 1)
-			merged_data = np.concatenate(merged_data, numpy.mean(cols, 1))
-	np.savetxt("testing.txt", merged_data)
+			print(field)
+			print([headers[predictions_table].index(field) for predictions_table in file_list if field in headers[predictions_table]])
+			cols = np.array([data[predictions_table][:,headers[predictions_table].index(field)] for predictions_table in file_list if field in headers[predictions_table]])
+			col = np.array([np.mean(cols, 0)]).T
+			col_list.append(col)
+#			print(col)
+#			print(merged_data)
+#			merged_data = np.concatenate(merged_data, col)
+	print(col_list)
+	for pair in zip(output_header, col_list):
+		print("Field:{}\tLength:{}\tShape:{}".format(pair[0],len(pair[1]), pair[1].shape))
+	merged_data = np.rec.fromarrays(col_list, names=",".join(output_header))
+	output_filename="testing.txt"
+	np.savetxt(output_filename, merged_data, fmt='%s')
+	return output_filename
 
 
 def merge_rep_predictions(file_list):
