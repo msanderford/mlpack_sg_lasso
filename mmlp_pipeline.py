@@ -122,8 +122,10 @@ if __name__ == '__main__':
 			selected_count = sum([1 for val in score_tables[hypothesis].values() if val[0] > 0])
 			counter = 1
 			final_round = False
+			if selected_count <= gene_target and not final_round:
+				final_round = True
 			shutil.move("{}_hypothesis.txt".format(hypothesis), "{}.txt".format(hypothesis))
-			while count==1 or selected_count > gene_target or final_round:
+			while selected_count > gene_target or final_round:
 				# Generate new aln_list file and point args.aln_list at it
 				aln_list_filename = os.path.join(aln_list_dir, "{}_{}_{}.txt".format(aln_list_basename, hypothesis, counter))
 				with open(aln_list_filename, 'w') as file:
