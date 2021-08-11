@@ -51,8 +51,7 @@ def main(args):
 				merged_rep_predictions_files[hypothesis_filename] = gcv.merge_predictions(merged_parts_prediction_files[hypothesis_filename],hypothesis_filename.replace("hypothesis.txt","merged_gene_predictions_final.txt"))
 				gcv_files.extend(merged_parts_prediction_files[hypothesis_filename])
 				gcv_files.append(merged_rep_predictions_files[hypothesis_filename])
-				gcv_files.append(merged_rep_predictions_files[hypothesis_filename].replace("final.txt","final.png"))
-				gcv.main(merged_rep_predictions_files[hypothesis_filename])
+				gcv_files.append(gcv.main(merged_rep_predictions_files[hypothesis_filename]))
 		os.mkdir(args.output)
 		for tempdir in tempdir_list:
 			shutil.move(tempdir, args.output)
@@ -170,6 +169,8 @@ if __name__ == '__main__':
 				counter += 1
 			if os.path.exists("{}.txt".format(hypothesis)):
 				os.remove("{}.txt".format(hypothesis))
+			try:
+				shutil.move(os.path.join(args.output,"{}_sparsify_final".format(hypothesis),"{}_merged_gene_predictions_final.png".format(hypothesis)), args.output)
 
 	# generate_gene_prediction_table(weights_filename, responses_filename, groups_filename, features_filename, output_filename)
 	# if False:
