@@ -22,7 +22,7 @@ def main(predictions_table, lead_cols=4, response_idx=2, prediction_idx=3, outpu
 		else:
 			data = np.genfromtxt(file, dtype=None, skip_header=1, missing_values="N/A", encoding=None, usecols=range(0, lead_cols + sample_size))
 			header = header[0: lead_cols + sample_size]
-		species = [(val)[0] for val in data]
+		seqid_list = [(val)[0] for val in data]
 		data = np.asarray([list(val)[1:] for val in data], dtype="float")
 	num_rows, num_cols = data.shape
 	print("\nRows: {}\nCols: {}\n".format(num_rows, num_cols))
@@ -65,7 +65,7 @@ def main(predictions_table, lead_cols=4, response_idx=2, prediction_idx=3, outpu
 	ax.set_xticklabels(header[1:], rotation=90, ha='left', size=xlabel_size)
 	#ax.set_yticks(np.arange(-.5, 10, 1));
 	ax.set_yticks(np.arange(0, num_rows * ytick_width, ytick_width));
-	ax.set_yticklabels(species, va="top", size=ylabel_size)
+	ax.set_yticklabels(seqid_list, va="top", size=ylabel_size)
 	for (i, j), z in np.ndenumerate(data):
 		ax.text((j+0.5) * xtick_width, (i+0.5)*ytick_width, '{:0.2f}'.format(z), ha='center', va='center', size=cell_label_size)
 
@@ -73,6 +73,42 @@ def main(predictions_table, lead_cols=4, response_idx=2, prediction_idx=3, outpu
 		output = "{}.png".format(os.path.splitext(os.path.basename(predictions_table))[0])
 	plt.savefig(output, dpi=DPI, bbox_inches='tight')
 
+	
+def merge_part_predictions(file_list):
+	seqid_list = None
+	data = {}
+	headers = {}
+	fields = set()
+	for predictions_table in file_list:
+		with open(predictions_table, 'r') as file:
+			headers[predictions_table] = file.readline().split("\t")
+			for field in headers[predictions_table]:
+				fields.add(field)
+			num_cols = len(header)
+			file.seek(0)
+			data[predictions_table] = np.genfromtxt(file, dtype=None, skip_header=1, missing_values="N/A", encoding=None)
+			if seqid_list is not None:
+				if not (seqid_list==data[:, 0]).all():
+					raise Exception("Cannot combine prediction tables for differing sequence sets.")
+			else:
+				seqid_list = data[:, 0]
+	output_header = list(headers.values())[0]
+	merged_data = np.array()
+	for field in list(fields):
+		if field not in output_header:
+			output_header.append(field)
+	for field in fields:
+		if field=="SeqID":
+			merged_data = seqid_list
+		else:
+			cols = np.array([data[predictions_table][:,headers[predictions_table].index(field)] for predictions_table in file_list])
+			#col = numpy.mean(cols, 1)
+			merged_data = np.concatenate(merged_data, numpy.mean(cols, 1))
+	np.savetxt("testing.txt", merged_data)
+
+
+def merge_rep_predictions(file_list):
+	pass
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description="Gene contribution visualizer for ESL pipeline.")
