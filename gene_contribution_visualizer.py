@@ -30,7 +30,7 @@ def main(predictions_table, lead_cols=4, response_idx=2, prediction_idx=3, outpu
 
 
 	# Sort columns by sum of contributions
-	ssq_scores = list(zip(range(3, num_cols), [np.sum(gene_col**2) for gene_col in data.transpose()[3:]]))
+	ssq_scores = list(zip(range(3, num_cols), [np.sum(np.nan_to_num(gene_col)**2) for gene_col in data.transpose()[3:]]))
 	ssq_scores.sort(key=lambda tup: tup[1], reverse=True)
 	sum_scores = list(zip(range(3, num_cols), [np.sum(gene_col) for gene_col in data.transpose()[3:]]))
 	sum_scores.sort(key=lambda tup: tup[1], reverse=True)
