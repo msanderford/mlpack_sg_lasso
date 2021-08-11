@@ -11,10 +11,10 @@ def main(args):
 	hypothesis_file_list = pf.generate_hypothesis_set(args.tree, args.nodelist, args.response)
 	HSS = {}
 	missing_seqs = set()
-	merged_rep_predictions_files = {}
+	merged_rep_predictions_files = {hypothesis_filename:[] for hypothesis_filename in hypothesis_file_list}
 	if args.ensemble_parts is not None and args.ensemble_parts >= 1:
 		tempdir_list = []
-		merged_parts_prediction_files = {}
+		merged_parts_prediction_files = {hypothesis_filename:[] for hypothesis_filename in hypothesis_file_list}
 		for i in range(0, args.ensemble_coverage):
 			partitioned_aln_lists = pf.split_gene_list(args.aln_list, args.ensemble_parts)
 			j = 0
