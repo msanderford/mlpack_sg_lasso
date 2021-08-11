@@ -18,7 +18,7 @@ def main(args):
 		for i in range(0, args.ensemble_coverage):
 			partitioned_aln_lists = pf.split_gene_list(args.aln_list, args.ensemble_parts)
 			j = 0
-			gene_prediction_files = {hypothesis_filename:None for hypothesis_filename in hypothesis_file_list}
+			gene_prediction_files = {hypothesis_filename:[] for hypothesis_filename in hypothesis_file_list}
 			for part_aln_list in partitioned_aln_lists:
 				tempdir = "{}_rep{}_part{}".format(args.output, i+1, j+1)
 				tempdir_list.append(tempdir)
