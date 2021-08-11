@@ -170,6 +170,7 @@ if __name__ == '__main__':
 			if os.path.exists("{}.txt".format(hypothesis)):
 				os.remove("{}.txt".format(hypothesis))
 			try:
+				shutil.move(os.path.join(args_original.output,"{}_sparsify_final".format(hypothesis),"{}_merged_gene_predictions_final.txt".format(hypothesis)), args_original.output)
 				shutil.move(os.path.join(args_original.output,"{}_sparsify_final".format(hypothesis),"{}_merged_gene_predictions_final.png".format(hypothesis)), args_original.output)
 			except:
 				print("Couldn't find summary graphic file at {}.".format(os.path.join(args_original.output,"{}_sparsify_final".format(hypothesis),"{}_merged_gene_predictions_final.png".format(hypothesis))))
