@@ -95,6 +95,9 @@ def merge_part_predictions(file_list):
 	for field in list(fields):
 		if field not in output_header:
 			output_header.append(field)
+	for predictions_table in file_list:
+		data[predictions_table] = np.asarray([list(val)[1:] for val in data[predictions_table]], dtype="float")
+		headers[predictions_table] = headers[predictions_table][1:]
 	for field in fields:
 		if field=="SeqID":
 			merged_data = seqid_list
