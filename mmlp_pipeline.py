@@ -171,6 +171,8 @@ if __name__ == '__main__':
 				os.remove("{}.txt".format(hypothesis))
 			try:
 				shutil.move(os.path.join(args.output,"{}_sparsify_final".format(hypothesis),"{}_merged_gene_predictions_final.png".format(hypothesis)), args.output)
+			except:
+				print("Couldn't generate summary graphic for {}.".format(hypothesis))
 
 	# generate_gene_prediction_table(weights_filename, responses_filename, groups_filename, features_filename, output_filename)
 	# if False:
