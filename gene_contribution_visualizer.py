@@ -84,16 +84,14 @@ def merge_part_predictions(file_list):
 			headers[predictions_table] = file.readline().split("\t")
 			for field in headers[predictions_table]:
 				fields.add(field)
-			num_cols = len(header)
 			file.seek(0)
 			data[predictions_table] = np.genfromtxt(file, dtype=None, skip_header=1, missing_values="N/A", encoding=None)
 			if seqid_list is not None:
-				if not (seqid_list==data[:, 0]).all():
+				if not (seqid_list==np.array([[val[0] for val in data[predictions_table]]]).T).all():
 					raise Exception("Cannot combine prediction tables for differing sequence sets.")
 			else:
-				seqid_list = data[:, 0]
+				seqid_list = np.array([[val[0] for val in data[predictions_table]]]).T
 	output_header = list(headers.values())[0]
-	merged_data = np.array()
 	for field in list(fields):
 		if field not in output_header:
 			output_header.append(field)

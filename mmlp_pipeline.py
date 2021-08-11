@@ -35,7 +35,7 @@ def main(args):
 						shutil.copy(hypothesis_filename, args.output)
 					shutil.move(hypothesis_filename.replace(".txt","_out_feature_weights.xml"), args.output)
 					shutil.move(hypothesis_filename.replace("hypothesis.txt","gene_predictions.txt"), args.output)
-					gene_prediction_files.append(os.path.join(args.output, hypothesis_filename.replace("hypothesis.txt","gene_predictions.txt")))
+					gene_prediction_files.append(os.path.join(tempdir, hypothesis_filename.replace("hypothesis.txt","gene_predictions.txt")))
 					shutil.move(hypothesis_filename.replace("hypothesis.txt", "mapped_feature_weights.txt"), args.output)
 					shutil.move(hypothesis_filename.replace("hypothesis.txt", "PSS.txt"), args.output)
 					shutil.move(hypothesis_filename.replace("hypothesis.txt", "GSS.txt"), args.output)
