@@ -4,6 +4,7 @@ import shutil
 import math
 import copy
 import pipeline_funcs as pf
+import gene_contribution_visualizer as gcv
 
 
 def main(args):
@@ -12,9 +13,11 @@ def main(args):
 	missing_seqs = set()
 	if args.ensemble_parts is not None and args.ensemble_parts >= 1:
 		tempdir_list = []
+		merged_parts_prediction_files = []
 		for i in range(0, args.ensemble_coverage):
 			partitioned_aln_lists = pf.split_gene_list(args.aln_list, args.ensemble_parts)
 			j = 0
+			gene_prediction_files = []
 			for part_aln_list in partitioned_aln_lists:
 				tempdir = "{}_rep{}_part{}".format(args.output, i+1, j+1)
 				tempdir_list.append(tempdir)
@@ -32,11 +35,14 @@ def main(args):
 						shutil.copy(hypothesis_filename, args.output)
 					shutil.move(hypothesis_filename.replace(".txt","_out_feature_weights.xml"), args.output)
 					shutil.move(hypothesis_filename.replace("hypothesis.txt","gene_predictions.txt"), args.output)
+					gene_prediction_files.append(os.path.join(args.output, hypothesis_filename.replace("hypothesis.txt","gene_predictions.txt")))
 					shutil.move(hypothesis_filename.replace("hypothesis.txt", "mapped_feature_weights.txt"), args.output)
 					shutil.move(hypothesis_filename.replace("hypothesis.txt", "PSS.txt"), args.output)
 					shutil.move(hypothesis_filename.replace("hypothesis.txt", "GSS.txt"), args.output)
 				shutil.move(args.output, tempdir)
 				j += 1
+			merged_parts_prediction_files.append(gcv.merge_part_predictions(gene_prediction_files))
+		merged_rep_predictions_file = gcv.merge_rep_predictions(merged_parts_prediction_files)
 		os.mkdir(args.output)
 		for tempdir in tempdir_list:
 			shutil.move(tempdir, args.output)
@@ -129,7 +135,9 @@ if __name__ == '__main__':
 					args.lambda2 = 10**-6
 					args.ensemble_parts = 1
 					args.ensemble_coverage = 1
+					args.sparsify = False
 				score_tables.update(main(args))
+				args.sparsify = True
 				shutil.move(args.output, output_folder)
 				new_selected_count = sum([1 for val in score_tables[hypothesis].values() if val[0] > 0])
 				if not final_round and new_selected_count == selected_count:
@@ -143,7 +151,6 @@ if __name__ == '__main__':
 				else:
 					final_round = False
 				counter += 1
-			shutil.move("{}_hypothesis.txt".format(hypothesis), output_folder)
 			if os.path.exists("{}.txt".format(hypothesis)):
 				os.remove("{}.txt".format(hypothesis))
 
