@@ -116,9 +116,15 @@ def merge_part_predictions(file_list):
 	print(col_list)
 	for pair in zip(output_header, col_list):
 		print("Field:{}\tLength:{}\tShape:{}".format(pair[0],len(pair[1]), pair[1].shape))
-	merged_data = np.rec.fromarrays(col_list, names=",".join(output_header))
+#	merged_data = np.rec.fromarrays(col_list, names=",".join(output_header))
+	merged_data = np.hstack(tuple(col_list))
 	output_filename="testing.txt"
-	np.savetxt(output_filename, merged_data, fmt='%s')
+	print(len(output_header))
+	print(merged_data.dtype)
+	print(merged_data.shape)
+#	np.savetxt(output_filename, merged_data, delimiter="\t", fmt='%s,'+','.join(['%.2f']*(merged_data.shape[1]-1)))
+	np.savetxt(output_filename, merged_data, fmt='\t'.join(['%s']*merged_data.shape[1]), header='\t'.join(output_header), comments='')
+#	np.savetxt(output_filename, merged_data, delimiter="\t")
 	return output_filename
 
 
