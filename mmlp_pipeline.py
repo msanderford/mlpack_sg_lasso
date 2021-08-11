@@ -43,7 +43,7 @@ def main(args):
 				shutil.move(args.output, tempdir)
 				j += 1
 			for hypothesis_filename in hypothesis_file_list:
-				merged_parts_prediction_files[hypothesis_filename].append(gcv.merge_predictions(gene_prediction_files[hypothesis_filename],hypothesis_filename.replace("hypothesis.txt","merged_gene_predictions_rep{}.txt".format(i)))
+				merged_parts_prediction_files[hypothesis_filename].append(gcv.merge_predictions(gene_prediction_files[hypothesis_filename],hypothesis_filename.replace("hypothesis.txt","merged_gene_predictions_rep{}.txt".format(i))))
 		for hypothesis_filename in hypothesis_file_list:
 			merged_rep_predictions_files[hypothesis_filename] = gcv.merge_predictions(merged_parts_prediction_files,hypothesis_filename.replace("hypothesis.txt","merged_gene_predictions_final.txt"))
 			gcv.main(merged_rep_predictions_files[hypothesis_filename])
