@@ -70,7 +70,7 @@ def main(predictions_table, lead_cols=4, response_idx=2, prediction_idx=3, outpu
 		ax.text((j+0.5) * xtick_width, (i+0.5)*ytick_width, '{:0.2f}'.format(z), ha='center', va='center', size=cell_label_size)
 
 	if output is None:
-		output = "{}.png".format(os.path.splitext(os.path.basename(predictions_table))[0])
+		output = os.path.join(os.path.dirname(predictions_table),"{}.png".format(os.path.splitext(os.path.basename(predictions_table))[0]))
 	plt.savefig(output, dpi=DPI, bbox_inches='tight')
 
 	
