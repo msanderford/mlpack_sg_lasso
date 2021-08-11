@@ -42,11 +42,13 @@ def main(args):
 					shutil.move(hypothesis_filename.replace("hypothesis.txt", "GSS.txt"), args.output)
 				shutil.move(args.output, tempdir)
 				j += 1
+			if not args.sparsify:
+				for hypothesis_filename in hypothesis_file_list:
+					merged_parts_prediction_files[hypothesis_filename].append(gcv.merge_predictions(gene_prediction_files[hypothesis_filename],hypothesis_filename.replace("hypothesis.txt","merged_gene_predictions_rep{}.txt".format(i))))
+		if not args.sparsify:
 			for hypothesis_filename in hypothesis_file_list:
-				merged_parts_prediction_files[hypothesis_filename].append(gcv.merge_predictions(gene_prediction_files[hypothesis_filename],hypothesis_filename.replace("hypothesis.txt","merged_gene_predictions_rep{}.txt".format(i))))
-		for hypothesis_filename in hypothesis_file_list:
-			merged_rep_predictions_files[hypothesis_filename] = gcv.merge_predictions(merged_parts_prediction_files[hypothesis_filename],hypothesis_filename.replace("hypothesis.txt","merged_gene_predictions_final.txt"))
-			gcv.main(merged_rep_predictions_files[hypothesis_filename])
+				merged_rep_predictions_files[hypothesis_filename] = gcv.merge_predictions(merged_parts_prediction_files[hypothesis_filename],hypothesis_filename.replace("hypothesis.txt","merged_gene_predictions_final.txt"))
+				gcv.main(merged_rep_predictions_files[hypothesis_filename])
 		os.mkdir(args.output)
 		for tempdir in tempdir_list:
 			shutil.move(tempdir, args.output)
