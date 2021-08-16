@@ -118,7 +118,7 @@ def merge_predictions(file_list, output_filename=None):
 #			print(merged_data)
 #			merged_data = np.concatenate(merged_data, col)
 #	print(col_list)
-	for pair in zip(output_header, col_list):
+#	for pair in zip(output_header, col_list):
 #		print("Field:{}\tLength:{}\tShape:{}".format(pair[0],len(pair[1]), pair[1].shape))
 #	merged_data = np.rec.fromarrays(col_list, names=",".join(output_header))
 	merged_data = np.hstack(tuple(col_list))
