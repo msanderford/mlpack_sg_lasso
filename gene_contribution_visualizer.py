@@ -103,30 +103,30 @@ def merge_predictions(file_list, output_filename=None):
 		data[predictions_table] = np.asarray([list(val)[1:] for val in data[predictions_table]], dtype="float")
 #		print(headers[predictions_table])
 		headers[predictions_table] = headers[predictions_table][1:]
-		print(headers[predictions_table])
+#		print(headers[predictions_table])
 	for field in output_header:
 		if field=="SeqID":
 			#merged_data = seqid_list
 			col_list = [seqid_list]
 		else:
-			print(field)
-			print([headers[predictions_table].index(field) for predictions_table in file_list if field in headers[predictions_table]])
+#			print(field)
+#			print([headers[predictions_table].index(field) for predictions_table in file_list if field in headers[predictions_table]])
 			cols = np.array([data[predictions_table][:,headers[predictions_table].index(field)] for predictions_table in file_list if field in headers[predictions_table]])
 			col = np.array([np.mean(cols, 0)]).T
 			col_list.append(col)
 #			print(col)
 #			print(merged_data)
 #			merged_data = np.concatenate(merged_data, col)
-	print(col_list)
+#	print(col_list)
 	for pair in zip(output_header, col_list):
-		print("Field:{}\tLength:{}\tShape:{}".format(pair[0],len(pair[1]), pair[1].shape))
+#		print("Field:{}\tLength:{}\tShape:{}".format(pair[0],len(pair[1]), pair[1].shape))
 #	merged_data = np.rec.fromarrays(col_list, names=",".join(output_header))
 	merged_data = np.hstack(tuple(col_list))
 	if output_filename is None:
 		output_filename="testing.txt"
-	print(len(output_header))
-	print(merged_data.dtype)
-	print(merged_data.shape)
+#	print(len(output_header))
+#	print(merged_data.dtype)
+#	print(merged_data.shape)
 #	np.savetxt(output_filename, merged_data, delimiter="\t", fmt='%s,'+','.join(['%.2f']*(merged_data.shape[1]-1)))
 	np.savetxt(output_filename, merged_data, fmt='\t'.join(['%s']*merged_data.shape[1]), header='\t'.join(output_header), comments='')
 #	np.savetxt(output_filename, merged_data, delimiter="\t")
