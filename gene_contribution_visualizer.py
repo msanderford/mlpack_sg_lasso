@@ -50,8 +50,7 @@ def main(predictions_table, lead_cols=4, response_idx=2, prediction_idx=3, outpu
 	#fig, ax = plt.subplots()
 	fig, ax = plt.subplots(figsize=(num_cols * 0.1, num_rows * 0.1))
 	#fig.set_size_inches()
-	xlabel_size = 3
-	ylabel_size = 3
+	label_size = 3
 	cell_label_size = 2.0
 	DPI = 600
 	ax.grid(which='major', axis='both', linestyle='-', color='k', linewidth=0.2)
@@ -63,10 +62,13 @@ def main(predictions_table, lead_cols=4, response_idx=2, prediction_idx=3, outpu
 	ax.imshow(data[:, 3:], cmap=cmap, norm=TwoSlopeNorm(0), extent=((lead_cols - 1)*xtick_width, num_cols*xtick_width, num_rows*ytick_width, 0))
 	#ax.set_xticks(np.arange(-.5, 100, 10));
 	ax.set_xticks(np.arange(0, num_cols * xtick_width, xtick_width));
-	ax.set_xticklabels(header[1:], rotation=90, ha='left', size=xlabel_size)
+	ax.set_xticklabels(header[1:], rotation=90, ha='left', size=label_size)
 	#ax.set_yticks(np.arange(-.5, 10, 1));
 	ax.set_yticks(np.arange(0, num_rows * ytick_width, ytick_width));
-	ax.set_yticklabels(seqid_list, va="top", size=ylabel_size)
+	ax.set_yticklabels(seqid_list, va="top", size=label_size)
+	ax.set_xlabel('Alignment Names', fontsize=label_size*1.25)
+	ax.set_ylabel('Sequence IDs', fontsize=label_size*1.25)
+	ax.set_title('Group Contribution Weights', fontsize=label_size*1.75)
 	for (i, j), z in np.ndenumerate(data):
 		ax.text((j+0.5) * xtick_width, (i+0.5)*ytick_width, '{:0.2f}'.format(z), ha='center', va='center', size=cell_label_size)
 
