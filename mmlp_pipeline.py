@@ -85,7 +85,8 @@ def main(args):
 				file.write("{}\t{}\n".format(hypothesis_filename.replace("_hypothesis.txt", ""), HSS[hypothesis_filename]))
 				gcv_files.append(gcv.main(os.path.join(args.output,hypothesis_filename.replace("hypothesis.txt", "gene_predictions.txt"))))
 		for file in gcv_files:
-			shutil.move(file, args.output)
+			if os.path.dirname(file)!=os.path.normpath(args.output):
+				shutil.move(file, args.output)
 		return None
 
 
