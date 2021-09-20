@@ -87,7 +87,7 @@ def analyze_ensemble_weights(args, weights):
 	return score_tables
 
 
-def generate_gene_prediction_table(weights_filename, responses_filename, groups_filename, features_filename, output_filename, gene_list, missing_seqs):
+def generate_gene_prediction_table(weights_filename, responses_filename, groups_filename, features_filename, output_filename, gene_list, missing_seqs, group_list, field_filename=None):
 	# Read weights, responses, and group indices files
 	model = xml_model_to_dict(weights_filename)
 	seqlist = []
@@ -101,30 +101,39 @@ def generate_gene_prediction_table(weights_filename, responses_filename, groups_
 		line1_data = [int(x) for x in file.readline().strip().split("\t")]
 		line2_data = [int(x) for x in file.readline().strip().split("\t")]
 		line3_data = [float(x) for x in file.readline().strip().split("\t")]
+	field = list(range(0, len(model["weight_list"])))
+	if field_filename is not None:
+		with open(field_filename, 'r') as file:
+			field = [int(x)-1 for x in file.readline().strip().split("\t")]
 	group_indices = list(zip(line1_data, line2_data, line3_data))
 	group_weights = []
-	# print(len(model["weight_list"]))
+	#print(len(model["weight_list"]))
+	#print(len(field))
 	for group in group_indices:
-		# print(group)
-		group_weights.append(numpy.asarray([model["weight_list"][x] for x in range(group[0]-1, group[1])]))
+		#print(group)
+		group_weights.append(numpy.asarray([model["weight_list"][field[x]] for x in range(group[0]-1, group[1])]))
 	# Open features file and process 1 row at a time,
 	#  can be modified to process in chunks that fit in memory later.
 	group_sums = []
+	predictions = []
 	with open(features_filename, 'r') as file:
 		for line in file:
 			data = numpy.asarray([float(x) for x in line.strip().split("\t")])
 			sums = []
 			for (index, weight) in zip(group_indices, group_weights):
-				sums.append(sum(data[index[0]-1:index[1]] * weight))
+				#print(index)
+				#print(len(data[index[0]-1:index[1]]))
+				sums.append(sum(numpy.asarray([data[x] for x in field[index[0]-1:index[1]]]) * weight))
 			group_sums.append(sums)
+			predictions.append(sum((data * numpy.asarray(model["weight_list"]))) + model["intercept"])
 	# Write gene predictions table
 	with open(output_filename, 'w') as file:
-		file.write("SeqID\tResponse\tPrediction\tIntercept\t{}\n".format("\t".join(gene_list)))
-		for (seqid, gene_sums) in zip(seqlist, group_sums):
+		file.write("SeqID\tResponse\tPrediction\tIntercept\t{}\n".format("\t".join([",".join(x) for x in group_list])))
+		for (seqid, gene_sums, prediction) in zip(seqlist, group_sums, predictions):
 			for i in range(0, len(gene_sums)):
-				if (seqid, gene_list[i]) in missing_seqs:
+				if sum([1 for x in group_list[i] if (seqid, x) in missing_seqs]) == len(group_list[i]):
 					gene_sums[i] = "N/A"
-			file.write("{}\t{}\t{}\t{}\t{}\n".format(seqid, responses[seqid], sum([x for x in gene_sums if x != "N/A"]) + model["intercept"], model["intercept"], "\t".join([str(x) for x in gene_sums])))
+			file.write("{}\t{}\t{}\t{}\t{}\n".format(seqid, responses[seqid], prediction, model["intercept"], "\t".join([str(x) for x in gene_sums])))
 	with open(str(output_filename).replace("_gene_predictions.txt", "_GSS.txt"), 'w') as file:
 		file.write("{}\t{}\n".format("Gene","GSS"))
 		for (gene, weights) in zip(gene_list, group_weights):
@@ -253,11 +262,24 @@ def generate_input_matrices(alnlist_filename, hypothesis_filename_list, args):
 	response_file_list = []
 	group_indices_file_list = []
 	features_file_list = []
+	aln_file_list = {}
 	gene_list = []
+	group_list = []
+	field_file_list = []
 	# Generate gene list from alignment list file
 	with open(alnlist_filename) as file:
 		for line in file:
-			gene_list.append(os.path.splitext(os.path.basename(line.strip()))[0])
+			group = []
+			for aln_filename in line.strip().split(","):
+				basename = os.path.splitext(os.path.basename(aln_filename.strip()))[0]
+				group.append(basename)
+				if basename in aln_file_list.keys():
+					if aln_file_list[basename] != aln_filename.strip():
+						raise Exception("Found multiple alignment files with identical basename {}.".format(basename))
+				else:
+					aln_file_list[basename] = aln_filename.strip()
+			gene_list.extend(group)
+			group_list.append(group)
 	#preprocess_exe = "/home/tuf79348/git/pipeline/mlpack-3.2.2/build/bin/preprocess"
 	preprocess_exe = os.path.join(os.getcwd(), "mlpack-3.2.2", "build", "bin", "preprocess")
 	preprocess_cwd, alnlist_filename = os.path.split(alnlist_filename)
@@ -281,8 +303,9 @@ def generate_input_matrices(alnlist_filename, hypothesis_filename_list, args):
 					response_file_list.append(temp_fname)
 					group_indices_file_list.append(os.path.join(output_basename, "group_indices_" + output_basename + ".txt"))
 					features_file_list.append(os.path.join(output_basename, "feature_" + output_basename + ".txt"))
+					field_file_list.append(os.path.join(output_basename, "field_" + output_basename + ".txt"))
 		#return [os.path.join(output_basename, "feature_" + output_basename + ".txt"), os.path.join(output_basename, "group_indices_" + output_basename + ".txt"), response_file_list, gene_list]
-		return [features_file_list, group_indices_file_list, response_file_list, gene_list]
+		return [features_file_list, group_indices_file_list, response_file_list, gene_list, field_file_list, group_list]
 	else:
 		for filename in hypothesis_filename_list:
 			# Construct preprocessing command
@@ -304,36 +327,41 @@ def generate_input_matrices(alnlist_filename, hypothesis_filename_list, args):
 			shutil.move(os.path.join(output_basename, "resampled_" + output_basename + ".txt"), os.path.join(output_basename, "resampled_" + hypothesis_basename + ".txt"))
 			response_file_list.append(os.path.join(output_basename, "response_" + hypothesis_basename + ".txt"))
 			group_indices_file_list.append(os.path.join(output_basename, "group_indices_" + hypothesis_basename + ".txt"))
+			field_file_list.append(os.path.join(output_basename, "field_" + hypothesis_basename + ".txt"))
 			features_file_list.append(os.path.join(output_basename, "feature_" + hypothesis_basename + ".txt"))
-		return [features_file_list, group_indices_file_list, response_file_list, gene_list]
+		return [features_file_list, group_indices_file_list, response_file_list, gene_list, field_file_list, group_list]
 
 
-def run_mlp(features_filename_list, groups_filename_list, response_filename_list, sparsity, group_sparsity, method, slep_opts):
+def run_mlp(features_filename_list, groups_filename_list, response_filename_list, field_filename_list, sparsity, group_sparsity, method, slep_opts):
 	if method == "leastr":
 		method = "mlpack_sg_lasso_leastr"
 	elif method == "logistic":
 		method = "mlpack_sg_lasso"
+	elif method == "ol_leastr":
+		method = "mlpack_overlapping_sg_lasso_leastr"
 	else:
 		raise Exception("Provided method name not recognized, please provide a valid method name.")
 	weights_file_list = []
 	mlp_exe = os.path.join(os.getcwd(), "mlpack-3.2.2", "build", "bin", method)
 	# Run sg_lasso for each response file in response_filename_list
-	for response_filename, features_filename, groups_filename in zip(response_filename_list, features_filename_list, groups_filename_list):
+	for response_filename, features_filename, groups_filename, field_filename in zip(response_filename_list, features_filename_list, groups_filename_list, field_filename_list):
 		basename = str(os.path.splitext(os.path.basename(response_filename))[0]).replace("response_","")
 		if slep_opts is None:
 			mlp_cmd = "{} -v -f {} -z {} -y {} -n {} -r {} -w {}".format(mlp_exe, features_filename, sparsity, group_sparsity, groups_filename, response_filename, basename + "_out_feature_weights.xml")
 		else:
 			mlp_cmd = "{} -v -f {} -z {} -y {} -n {} -r {} -s {} -w {}".format(mlp_exe, features_filename, sparsity, group_sparsity, groups_filename, response_filename, slep_opts, basename + "_out_feature_weights.xml")
+		if method == "mlpack_overlapping_sg_lasso_leastr":
+			mlp_cmd = mlp_cmd + " -g {}".format(field_filename)
 		print(mlp_cmd)
 		subprocess.call(mlp_cmd.split(" "), stderr=subprocess.STDOUT)
 		weights_file_list.append(basename + "_out_feature_weights.xml")
 	return weights_file_list
 
 
-def process_weights(weights_file_list, hypothesis_file_list, groups_filename_list, features_filename_list, gene_list, HSS, missing_seqs):
+def process_weights(weights_file_list, hypothesis_file_list, groups_filename_list, features_filename_list, gene_list, HSS, missing_seqs, group_list):
 	for (weights_filename, hypothesis_filename, groups_filename, features_filename) in zip(weights_file_list, hypothesis_file_list, groups_filename_list, features_filename_list):
-		generate_gene_prediction_table(weights_filename, hypothesis_filename, groups_filename, features_filename, str(hypothesis_filename).replace("_hypothesis.txt", "_gene_predictions.txt"), gene_list, missing_seqs)
-		total_significance = generate_mapped_weights_file(weights_filename, str(groups_filename).replace("group_indices_", "feature_mapping_"))
+		generate_gene_prediction_table(weights_filename, hypothesis_filename, groups_filename, features_filename, hypothesis_filename.replace("_hypothesis.txt", "_gene_predictions.txt"), gene_list, missing_seqs, group_list, groups_filename.replace("group_indices_", "field_"))
+		total_significance = generate_mapped_weights_file(weights_filename, groups_filename.replace("group_indices_", "feature_mapping_"))
 		HSS[hypothesis_filename] = HSS.get(hypothesis_filename, 0) + total_significance
 
 def generate_mapped_weights_file(weights_filename, feature_map_filename):
