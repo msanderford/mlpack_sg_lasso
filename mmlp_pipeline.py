@@ -23,13 +23,13 @@ def main(args):
 			for part_aln_list in partitioned_aln_lists:
 				tempdir = "{}_rep{}_part{}".format(args.output, i+1, j+1)
 				tempdir_list.append(tempdir)
-				features_filename_list, groups_filename_list, response_filename_list, gene_list = pf.generate_input_matrices(part_aln_list, hypothesis_file_list, args)
+				features_filename_list, groups_filename_list, response_filename_list, gene_list, field_filename_list, group_list = pf.generate_input_matrices(part_aln_list, hypothesis_file_list, args)
 				with open(os.path.join(args.output, "missing_seqs_" + args.output + ".txt"), "r") as file:
 					for line in file:
 						data = line.strip().split("\t")
 						missing_seqs.add((data[1], os.path.splitext(os.path.basename(data[0]))[0]))
-				weights_file_list = pf.run_mlp(features_filename_list, groups_filename_list, response_filename_list, args.lambda1, args.lambda2, args.method, args.slep_opts)
-				pf.process_weights(weights_file_list, hypothesis_file_list, groups_filename_list, features_filename_list, gene_list, HSS, missing_seqs)
+				weights_file_list = pf.run_mlp(features_filename_list, groups_filename_list, response_filename_list, field_filename_list, args.lambda1, args.lambda2, args.method, args.slep_opts)
+				pf.process_weights(weights_file_list, hypothesis_file_list, groups_filename_list, features_filename_list, gene_list, HSS, missing_seqs, group_list)
 				for hypothesis_filename in hypothesis_file_list:
 					if i+1 == args.ensemble_coverage and j+1 == args.ensemble_parts and not args.sparsify:
 						shutil.move(hypothesis_filename, args.output)
@@ -65,13 +65,13 @@ def main(args):
 		weights = pf.parse_result_files(args, result_files_list)
 		return pf.analyze_ensemble_weights(args, weights)
 	else:
-		features_filename_list, groups_filename_list, response_filename_list, gene_list = pf.generate_input_matrices(args.aln_list, hypothesis_file_list, args)
+		features_filename_list, groups_filename_list, response_filename_list, gene_list, field_filename_list, group_list = pf.generate_input_matrices(args.aln_list, hypothesis_file_list, args)
 		with open(os.path.join(args.output, "missing_seqs_" + args.output + ".txt"), "r") as file:
 			for line in file:
 				data = line.strip().split("\t")
 				missing_seqs.add((data[1], os.path.splitext(os.path.basename(data[0]))[0]))
-		weights_file_list = pf.run_mlp(features_filename_list, groups_filename_list, response_filename_list, args.lambda1, args.lambda2, args.method, args.slep_opts)
-		pf.process_weights(weights_file_list, hypothesis_file_list, groups_filename_list, features_filename_list, gene_list, HSS, missing_seqs)
+		weights_file_list = pf.run_mlp(features_filename_list, groups_filename_list, response_filename_list, field_filename_list, args.lambda1, args.lambda2, args.method, args.slep_opts)
+		pf.process_weights(weights_file_list, hypothesis_file_list, groups_filename_list, features_filename_list, gene_list, HSS, missing_seqs, group_list)
 		for hypothesis_filename in hypothesis_file_list:
 			shutil.move(hypothesis_filename, args.output)
 			shutil.move(hypothesis_filename.replace(".txt","_out_feature_weights.xml"), args.output)
@@ -104,7 +104,7 @@ if __name__ == '__main__':
 	parser.add_argument("--ensemble_parts", help="Build gene-wise ensemble models, splitting the set of genes into N partitions for each run.", type=int, default=None)
 	parser.add_argument("--ensemble_coverage", help="Number of ensemble models to build. Each gene will be included in this many individual models.", type=int, default=5)
 	parser.add_argument("--sparsify", help="Iteratively increase sparsity until selected set of genes fits in one partition.", action='store_true', default=False)
-	parser.add_argument("--method", help="SGLasso type to use. Options are \"leastr\" or \"logistic\". Defaults to \"leastr\".", type=str, default="leastr")
+	parser.add_argument("--method", help="SGLasso type to use. Options are \"logistic\", \"leastr\", or \"ol_leastr\". Defaults to \"leastr\".", type=str, default="leastr")
 	parser.add_argument("--slep_opts", help="File of tab-separated name-value pairs (one per line) to specify SLEP options.", type=str, default=None)
 	args = parser.parse_args()
 	score_tables = main(args)
@@ -117,10 +117,13 @@ if __name__ == '__main__':
 		aln_file_list = {}
 		with open(args.aln_list, 'r') as file:
 			for line in file:
-				basename = os.path.splitext(os.path.basename(line.strip()))[0]
-				if basename in aln_file_list:
-					raise Exception("Found multiple alignment files with identical basename {}.".format(basename))
-				aln_file_list[basename] = line.strip()
+				for aln_filename in line.strip().split(","):
+					basename = os.path.splitext(os.path.basename(aln_filename.strip()))[0]
+					if basename in aln_file_list.keys():
+						if aln_file_list[basename] != aln_filename.strip():
+							raise Exception("Found multiple alignment files with identical basename {}.".format(basename))
+					else:
+						aln_file_list[basename] = aln_filename.strip()
 		for hypothesis in score_tables.keys():
 			args = copy.deepcopy(args_original)
 			if gene_target is None:
@@ -137,9 +140,22 @@ if __name__ == '__main__':
 				# Generate new aln_list file and point args.aln_list at it
 				aln_list_filename = os.path.join(aln_list_dir, "{}_{}_{}.txt".format(aln_list_basename, hypothesis, counter))
 				with open(aln_list_filename, 'w') as file:
-					for gene in score_tables[hypothesis].keys():
-						if score_tables[hypothesis][gene][0] > 0:
-							file.write("{}\n".format(aln_file_list[gene]))
+					with open(args.aln_list, 'r') as original_file:
+						stashed_gene_groups = []
+						nonzero_genes = [key for key in score_tables[hypothesis].keys() if score_tables[hypothesis][key][0] > 0]
+						#print(nonzero_genes)
+						new_gene_groups = []
+						for line in original_file:
+							gene_group = line.strip().split(",")
+							new_gene_group = sorted([os.path.splitext(os.path.basename(val))[0] for val in gene_group if os.path.splitext(os.path.basename(val))[0] in nonzero_genes])
+							#print("{}\t::\t{}".format(",".join(gene_group), ",".join(new_gene_group)))
+							if tuple(new_gene_group) not in stashed_gene_groups:
+								stashed_gene_groups.append(tuple(new_gene_group))
+								new_gene_groups.append(new_gene_group)
+						#print(new_gene_groups)
+						for new_gene_group in new_gene_groups:
+							if len(new_gene_group) > 0:
+								file.write("{}\n".format(",".join([aln_file_list[val] for val in new_gene_group])))
 				args.aln_list = aln_list_filename
 				# Also point --response at this hypothesis' response file
 				args.response = "{}.txt".format(hypothesis)
