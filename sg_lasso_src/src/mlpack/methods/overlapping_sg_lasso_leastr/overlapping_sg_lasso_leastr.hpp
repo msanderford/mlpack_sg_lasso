@@ -53,6 +53,7 @@ class OLSGLassoLeastR
                    const arma::mat& weights,
                    const arma::rowvec& field,
                    double* lambda,
+                   std::map<std::string, std::string> slep_opts,
                    const bool intercept = true);
 
   /**
@@ -94,6 +95,7 @@ class OLSGLassoLeastR
   arma::rowvec& Train(const arma::mat& features,
                const arma::rowvec& responses,
                const arma::mat& weights,
+               std::map<std::string, std::string> slep_opts,
                const arma::rowvec& field,
                const bool intercept = true);
 
@@ -161,7 +163,8 @@ class OLSGLassoLeastR
   {
     ar & BOOST_SERIALIZATION_NVP(parameters);
     ar & BOOST_SERIALIZATION_NVP(lambda1);
-    ar & BOOST_SERIALIZATION_NVP(intercept);
+    ar & BOOST_SERIALIZATION_NVP(intercept_value);
+//    ar & BOOST_SERIALIZATION_NVP(intercept);
   }
 
  private:
@@ -180,6 +183,7 @@ class OLSGLassoLeastR
 
   //! Indicates whether first parameter is intercept.
   bool intercept;
+  double intercept_value;
 };
 
 } // namespace regression

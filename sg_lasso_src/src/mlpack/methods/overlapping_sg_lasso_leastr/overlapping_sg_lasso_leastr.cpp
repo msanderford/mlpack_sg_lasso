@@ -30,11 +30,12 @@ OLSGLassoLeastR::OLSGLassoLeastR(const arma::mat& features,
                                    const arma::mat& weights,
                                    const arma::rowvec& field,
                                    double* lambda,
+                                   std::map<std::string, std::string> slep_opts,
                                    const bool intercept) :
     lambda(lambda),
     intercept(intercept)
 {
-  Train(features, responses, weights, field, intercept);
+  Train(features, responses, weights, slep_opts, field, intercept);
 }
 
 //double OLSGLassoLeastR::Train(const arma::mat& features,
@@ -47,29 +48,61 @@ OLSGLassoLeastR::OLSGLassoLeastR(const arma::mat& features,
 arma::rowvec& OLSGLassoLeastR::Train(const arma::mat& features,
                                const arma::rowvec& responses,
                                const arma::mat& weights,
+                               std::map<std::string, std::string> slep_opts,
                                const arma::rowvec& field,
                                const bool intercept)
 {
   this->intercept = intercept;
 
   //Set all optional parameters to defaults
-  int opts_maxIter = 5000;
-  int opts_init = 2;
-  int opts_tFlag = 3;
+  int opts_maxIter = 100;
+  int opts_init = 2; //Previously set to 2
+  int opts_tFlag = 5; //Previously set to 3
   int opts_nFlag = 0;
   int opts_rFlag = 1;
   int opts_mFlag = 0;
-  int opts_rStartNum = 100;
-  double opts_tol = 0.00001;
+  double opts_tol = 0.0001; //Previously set to 0.00001
   arma::mat opts_ind = weights;
   opts_ind.cols(0,1) = opts_ind.cols(0,1) - 1;
   arma::rowvec opts_field = field - 1;
 
   //Set overlapping specific parameters to defaults
 
-  int opts_maxIter2 = 1000;
-  double opts_tol2 = 0.00000001;
+  int opts_maxIter2 = 100;
+  double opts_tol2 = 0.0001;
   int opts_flag2 = 2;
+  //Overwrite default options with those found in slep_opts file.
+  if ( slep_opts.find("maxIter") != slep_opts.end() ) {
+	opts_maxIter = std::stoi(slep_opts["maxIter"]);
+  }
+  int opts_rStartNum = opts_maxIter;
+  if ( slep_opts.find("init") != slep_opts.end() ) {
+	opts_init = std::stoi(slep_opts["init"]);
+  }
+  if ( slep_opts.find("tFlag") != slep_opts.end() ) {
+	opts_tFlag = std::stoi(slep_opts["tFlag"]);
+  }
+  if ( slep_opts.find("nFlag") != slep_opts.end() ) {
+	opts_nFlag = std::stoi(slep_opts["nFlag"]);
+  }
+  if ( slep_opts.find("rFlag") != slep_opts.end() ) {
+	opts_rFlag = std::stoi(slep_opts["rFlag"]);
+  }
+  if ( slep_opts.find("mFlag") != slep_opts.end() ) {
+	opts_mFlag = std::stoi(slep_opts["mFlag"]);
+  }
+  if ( slep_opts.find("tol") != slep_opts.end() ) {
+	opts_tol = std::stod(slep_opts["tol"]);
+  }
+  if ( slep_opts.find("tol2") != slep_opts.end() ) {
+	opts_tol2 = std::stod(slep_opts["tol2"]);
+  }
+  if ( slep_opts.find("maxIter2") != slep_opts.end() ) {
+	opts_maxIter2 = std::stoi(slep_opts["maxIter2"]);
+  }
+  if ( slep_opts.find("flag2") != slep_opts.end() ) {
+	opts_flag2 = std::stoi(slep_opts["flag2"]);
+  }
 
   /*
    * We want to calculate the a_i coefficients of:
@@ -157,8 +190,8 @@ arma::rowvec& OLSGLassoLeastR::Train(const arma::mat& features,
 
 	 temp = arma::max(temp - lambda1, n_zeros);
 
-	 //lambda2_max = computeLambda2Max(temp, n, ind, ind.n_rows);
-	 lambda2_max = 1;
+	 lambda2_max = computeLambda2Max(temp, n, ind, ind.n_rows);
+	 //lambda2_max = 1;
 
 	 lambda2 = lambda2 * lambda2_max;
   }
