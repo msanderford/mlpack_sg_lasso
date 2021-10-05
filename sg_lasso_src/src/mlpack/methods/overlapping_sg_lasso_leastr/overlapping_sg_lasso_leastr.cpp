@@ -190,8 +190,14 @@ arma::rowvec& OLSGLassoLeastR::Train(const arma::mat& features,
 
 	 temp = arma::max(temp - lambda1, n_zeros);
 
-	 lambda2_max = computeLambda2Max(temp, n, weights, weights.n_rows);
-	 //lambda2_max = 1;
+	 if (temp.n_rows==field.n_cols)
+	 {
+		lambda2_max = computeLambda2Max(temp, n, weights, weights.n_rows);
+	 }
+	 else
+	 {
+		 lambda2_max = 1;
+	 }
 
 	 lambda2 = lambda2 * lambda2_max;
   }
