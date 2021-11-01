@@ -51,12 +51,12 @@ PARAM_ROW_IN("field", "Vector of feature indices for overlapping groups.", "g");
 PARAM_ROW_IN("responses", "Vector containing responses y ", "r");
 PARAM_DOUBLE_IN("lambda1", "Feature regularization parameter (z1 >=0).", "z", 0.0);
 PARAM_DOUBLE_IN("lambda2", "Group regularization parameter (z2 >=0).", "y", 0.0);
-//PARAM_STRING_IN("fastaFile", "FASTA alignment to be converted to one-hot encoded features file.", "seqs", "none");
+PARAM_STRING_IN("fastaFile", "FASTA alignment to be converted to one-hot encoded features file.", "seqs", "none");
 
 // This is the future name of the parameter.
 PARAM_MODEL_OUT(OLSGLassoLeastR, "feature_weights", "File of learned feature weights.", "weights");
 
-int processFasta(string filename);
+map<string, string> processFasta(string filename);
 
 static void mlpackMain()
 {
@@ -78,7 +78,7 @@ static void mlpackMain()
   // An input file was given and we need to generate the model.
   if (computeModel)
   {
-	//string fastaFileName = CLI::GetParam<string>("fastaFile");
+	string fastaFileName = CLI::GetParam<string>("fastaFile");
 	//int testVal = processFasta(fastaFileName);
 
 	//std::cout << "processFasta exit status: " << testVal << std::endl;
@@ -108,7 +108,7 @@ static void mlpackMain()
     Timer::Stop("load_field");
 
     Timer::Start("sparse_group_lasso");
-    sgl = new OLSGLassoLeastR(features, responses, opts_ind, field, lambda);
+    sgl = new OLSGLassoLeastR(features, responses, opts_ind, field, lambda, processFasta(fastaFileName));
     Timer::Stop("sparse_group_lasso");
   }
 
@@ -119,8 +119,9 @@ static void mlpackMain()
 }
 
 
-int processFasta(string filename)
+map<string, string> processFasta(string filename)
 {
+  map<string, string> slep_opts;
   std::cout << "Processing FASTA file: " << filename << "..." << std::endl;
 
   string line;
@@ -128,6 +129,7 @@ int processFasta(string filename)
 
   if (fastaFile.is_open())
   {
+/*
      int i = 0;
      while (getline(fastaFile, line))
      {
@@ -149,7 +151,19 @@ int processFasta(string filename)
            i = i + 1;
         }
      }
-     fastaFile.close();
+*/
+    int splitpos;
+    string opt_key;
+    while (getline(fastaFile, line))
+    {
+      splitpos = line.find("\t");
+      if (splitpos != std::string::npos)
+      {
+        opt_key = line.substr(0, line.find("\t"));
+        slep_opts[opt_key] = line.substr(line.find("\t"), std::string::npos);
+      }
+    }	
+    fastaFile.close();
 //     for (int j = 0; j < i; j = j + 1)
 //     {
 //        std::cout << speciesIds[j] << ":" << seqs[j] << std::endl;
@@ -157,5 +171,5 @@ int processFasta(string filename)
 
   }
 
-  return 1;
+  return slep_opts;
 }
