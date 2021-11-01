@@ -42,6 +42,7 @@ def main(predictions_table, lead_cols=4, response_idx=2, prediction_idx=3, outpu
 	sorted_rows = list(zip(range(0, num_rows), data[:, 0], data[:, 1]))
 	sorted_rows.sort(key=lambda tup: (tup[1], tup[2]), reverse=True)
 	data = data[[val[0] for val in sorted_rows]]
+	seqid_list = [seqid_list[val[0]] for val in sorted_rows]
 
 
 	# draw gridlines
