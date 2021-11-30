@@ -203,6 +203,7 @@ arma::rowvec& OLSGLassoLeastR::Train(const arma::mat& features,
 	 else
 	 {
 		 lambda2_max = 1;
+		 std::cout << "Could not estimate Lambda2 max, defaulting to 1..." << std::endl;
 	 }
 
 	 lambda2 = lambda2 * lambda2_max;
