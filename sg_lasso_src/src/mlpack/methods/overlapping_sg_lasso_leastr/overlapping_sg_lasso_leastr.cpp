@@ -181,8 +181,14 @@ arma::rowvec& OLSGLassoLeastR::Train(const arma::mat& features,
 	 {
 		Log::Fatal << "\n opts.rFlag=1, and z should be in [0,1]" << std::endl;
 	 }
+	 arma::mat A_ol(responses.n_cols,field.n_cols,arma::fill::zeros);
 
-	 arma::mat temp = arma::abs(ATy);
+	 for(int i=0; i<field.n_cols; i++)
+	 	A_ol.col(i)=A.col(field[i]);
+
+	 //arma::mat temp = arma::abs(ATy);
+	 arma::mat ATy_ol = A_ol.t() * y;
+	 arma::mat temp = arma::abs(ATy_ol);
 
 	 double lambda1_max = arma::as_scalar(arma::max(temp));
 
