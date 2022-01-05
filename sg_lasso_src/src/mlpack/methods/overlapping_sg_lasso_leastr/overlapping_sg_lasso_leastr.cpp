@@ -172,6 +172,7 @@ arma::rowvec& OLSGLassoLeastR::Train(const arma::mat& features,
 
   //sgLeastR.m:178-201
   double* lambda;
+  bool estimate_l2 = false;
 
   if (opts_rFlag == 0)
   {
@@ -181,14 +182,14 @@ arma::rowvec& OLSGLassoLeastR::Train(const arma::mat& features,
 	 {
 		Log::Fatal << "\n opts.rFlag=1, and z should be in [0,1]" << std::endl;
 	 }
-	 arma::mat A_ol(responses.n_cols,field.n_cols,arma::fill::zeros);
+	 //arma::mat A_ol(responses.n_cols,field.n_cols,arma::fill::zeros);
 
-	 for(int i=0; i<field.n_cols; i++)
-	 	A_ol.col(i)=A.col(field[i]);
+	 //for(int i=0; i<field.n_cols; i++)
+	 //	A_ol.col(i)=A.col(field[i]);
 
-	 //arma::mat temp = arma::abs(ATy);
-	 arma::mat ATy_ol = A_ol.t() * y;
-	 arma::mat temp = arma::abs(ATy_ol);
+	 arma::mat temp = arma::abs(ATy);
+	 //arma::mat ATy_ol = A_ol.t() * y;
+	 //arma::mat temp = arma::abs(ATy_ol);
 
 	 double lambda1_max = arma::as_scalar(arma::max(temp));
 
@@ -203,10 +204,11 @@ arma::rowvec& OLSGLassoLeastR::Train(const arma::mat& features,
 	 else
 	 {
 		 lambda2_max = 1;
-		 std::cout << "Could not estimate Lambda2 max, defaulting to 1..." << std::endl;
+		 std::cout << "Could not compute Lambda2 max, attempting to estimate instead..." << std::endl;
+		 estimate_l2 = true;
 	 }
 
-	 lambda2 = lambda2 * lambda2_max;
+	 //lambda2 = lambda2 * lambda2_max;
   }
 
   //sgLogisticR.m:203-216
@@ -266,7 +268,57 @@ opts_ind = opts_ind.t();
     arma::mat ATAs = A.t() * As;
     arma::mat g = ATAs - ATy;
     xp = x;   Axp = Ax;
+	if (iterStep == 1)
+	{
+	  if (estimate_l2)
+	  {
+		  v = s - g/L;
+		  double l2_target, l2_low = 0, l2_high = 1;
+		  //Check l2_high
+		  for(int i = 1; i <= 100; i = i + 1)
+		  {
+			//Run overlapping
+			overlapping(x.memptr(), gap, penalty2, v.memptr(),  n, groupNum, lambda1/L, l2_high/L, opts_ind.memptr(), opts_field.memptr(), Y.memptr(), opts_maxIter2, opts_flag2, opts_tol2);
+			//Check if x is zeroed out
+			if (arma::max(arma::abs(x)) == 0)
+			{
+				x.fill(0);
+				std::cout << "Lambda2 High set to " << l2_high << std::endl;
+				break;
+			} else {
+				x.fill(0);
+				l2_high = l2_high * 2;
+			}
+		  }
+		  //Estimate l2_max
+		  for(int i = 1; i <= 100; i = i + 1)
+		  {
+			l2_target = (l2_high + l2_low) / 2.0;
+			//Run overlapping
+			overlapping(x.memptr(), gap, penalty2, v.memptr(),  n, groupNum, lambda1/L, l2_target/L, opts_ind.memptr(), opts_field.memptr(), Y.memptr(), opts_maxIter2, opts_flag2, opts_tol2);
+			//Check if x is zeroed out
+			if (arma::max(arma::abs(x)) == 0)
+			{
+				l2_high = l2_target;
+			} else {
+				l2_low = l2_target;
+			}
+			//Set x back to initial conditions
+			x.fill(0);
+			if (l2_high - l2_low < 0.0001)
+			{
+				lambda2_max = l2_high;
+				std::cout << "Lambda2 Max set to " << l2_high << std::endl;
+				break;
+			}
+		  }
+	  }
 
+	  if (opts_rFlag != 0)
+	  {
+		  lambda2 = lambda2 * lambda2_max;
+	  }
+	}
     int firstFlag = 1;
     //sgLogisticR.m:331-378
     while (true)
