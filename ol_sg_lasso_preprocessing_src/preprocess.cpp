@@ -49,7 +49,7 @@ void alnData::normalizeFeatures(bool normalize)
 
 void alnData::dropSingletons(bool ignoreSingletons)
 {
-//	this->ignoreSingletons = ignoreSingletons;
+	this->ignoreSingletons = ignoreSingletons;
 	this->countThreshold = 1;
 }
 
@@ -288,6 +288,7 @@ void alnData::processAln()
 	{
 		//check if site is constant
 		set<char> bases;
+		map<char, int> baseCounts;
 		bases.insert('-');
 		for (int j = 0; j < numSpecies; j++)
 		{
@@ -296,6 +297,29 @@ void alnData::processAln()
 		//process it into features if it isn't
 		if (bases.size() > 2)
 		{
+			if (this->ignoreSingletons)
+			{
+				for (auto elem : bases)
+				{
+					baseCounts[elem] = 0;
+				}
+				for (int j = 0; j < numSpecies; j++)
+				{
+					baseCounts[this->seqs[this->species[j]][i]]++;
+				}
+				//Sum non-indel baseCounts, then subtract major count, and check if remainder is greater than count threshold
+				int baseCountTotal = 0, maxCount = 0;
+				for (auto elem : bases)
+				{
+					if (elem == '-')
+						continue;
+					if (baseCounts[elem] > maxCount)
+						maxCount = baseCounts[elem];
+					baseCountTotal += baseCounts[elem];
+				}
+				if (baseCountTotal - maxCount <= this->countThreshold)
+					continue;
+			}
 			set<char>::iterator baseIter = bases.begin();
 			for (int j = 0; j < bases.size(); j++)
 			{
