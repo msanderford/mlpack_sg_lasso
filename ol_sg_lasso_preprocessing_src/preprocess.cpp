@@ -50,7 +50,7 @@ void alnData::normalizeFeatures(bool normalize)
 void alnData::dropSingletons(bool ignoreSingletons)
 {
 	this->ignoreSingletons = ignoreSingletons;
-	this->countThreshold = 1;
+	this->countThreshold = 2;
 }
 
 void alnData::setCountThreshold(int countThreshold)
@@ -317,7 +317,7 @@ void alnData::processAln()
 						maxCount = baseCounts[elem];
 					baseCountTotal += baseCounts[elem];
 				}
-				if (baseCountTotal - maxCount <= this->countThreshold)
+				if (baseCountTotal - maxCount < this->countThreshold)
 					continue;
 			}
 			set<char>::iterator baseIter = bases.begin();
@@ -326,17 +326,24 @@ void alnData::processAln()
 				if (*baseIter != '-')
 				{
 					vector<int> oneHot;
+					int featureSum = 0;
 					string featureName = this->currentGene + "_" + to_string(i) + "_" + *baseIter;
-					this->featureMap[this->featureIndex] = featureName;
 					for (int k = 0; k < numSpecies; k++)
 					{
 						if (this->seqs[this->species[k]][i] == *baseIter)
 						{
 							oneHot.push_back(1);
+							featureSum += 1;
 						} else {
 							oneHot.push_back(0);
 						}
 					}
+					if (featureSum < this->countThreshold)
+					{
+						baseIter++;
+						continue;
+					}
+					this->featureMap[this->featureIndex] = featureName;
 					//If disk cache is being used, overwrite features starting from 1 for each gene
 					if (this->useDiskCache)
 					{
@@ -515,7 +522,7 @@ void alnData::generateFeatureFile(string baseName)
 			val = 1.0/sum;
 		}
 //		if (this->ignoreSingletons && sum == 1.0)
-		if (sum <= this->countThreshold)
+		if (sum < this->countThreshold)
 		{
 			val = 0.0;
 		}
