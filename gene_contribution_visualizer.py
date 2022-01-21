@@ -10,7 +10,7 @@ from matplotlib.colors import TwoSlopeNorm
 import numpy as np
 
 
-def main(predictions_table, lead_cols=4, response_idx=2, prediction_idx=3, output=None):
+def main(predictions_table, lead_cols=4, response_idx=2, prediction_idx=3, output=None, gene_limit=100):
 	sample_size = 24
 	sample_size = None
 	with open(predictions_table, 'r') as file:
@@ -34,8 +34,8 @@ def main(predictions_table, lead_cols=4, response_idx=2, prediction_idx=3, outpu
 	ssq_scores.sort(key=lambda tup: tup[1], reverse=True)
 	sum_scores = list(zip(range(3, num_cols), [np.sum(gene_col) for gene_col in data.transpose()[3:]], header[4:]))
 	sum_scores.sort(key=lambda tup: tup[1], reverse=True)
-	data = data[:, list(range(0, 3)) + [val[0] for val in ssq_scores]]
-	header = header[0:4] + [val[2] for val in ssq_scores]
+	data = data[:, list(range(0, 3)) + [val[0] for val in ssq_scores[0:gene_limit]]]
+	header = header[0:4] + [val[2] for val in ssq_scores[0:gene_limit]]
 
 
 	# Sort rows by ground truth and predicted value
@@ -44,6 +44,8 @@ def main(predictions_table, lead_cols=4, response_idx=2, prediction_idx=3, outpu
 	data = data[[val[0] for val in sorted_rows]]
 	seqid_list = [seqid_list[val[0]] for val in sorted_rows]
 
+	# Reset dimensions if truncation has occurred.
+	num_rows, num_cols = data.shape
 
 	# draw gridlines
 	xtick_width = 20

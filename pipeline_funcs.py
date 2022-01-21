@@ -288,11 +288,21 @@ def generate_input_matrices(alnlist_filename, hypothesis_filename_list, args):
 	if not modified_response:
 		# Construct preprocessing command for first hypothesis file
 		preprocess_cmd = "{} {} {} {} {}".format(preprocess_exe, os.path.join(os.getcwd(), hypothesis_filename_list[0]), alnlist_filename, output_basename, options)
-		# print(preprocess_cmd)
+		print(preprocess_cmd)
 		subprocess.call(preprocess_cmd.split(" "), stderr=subprocess.STDOUT, cwd=preprocess_cwd)
 		# Move generated inputs to top level directory
 		if preprocess_cwd != ".":
 			shutil.move(os.path.join(preprocess_cwd, output_basename), ".")
+		# Substitute gene/group penalties
+		if args.gene_penalties is not None:
+			with open(os.path.join(output_basename, "group_indices_" + output_basename + ".txt"), 'r') as groups_file:
+				lines = [val.strip() for val in groups_file.readlines()]
+			with open(args.gene_penalties, 'r') as penalties_file:
+				penalty_line = '\t'.join([val.strip() for val in penalties_file.readlines()])
+			with open(os.path.join(output_basename, "group_indices_" + output_basename + ".txt"), 'w') as groups_file:
+				groups_file.write("{}\n".format(lines[0]))
+				groups_file.write("{}\n".format(lines[1]))
+				groups_file.write("{}\n".format(penalty_line))
 		# Construct response input file for each additional hypothesis file
 		for filename in hypothesis_filename_list:
 			with open(filename, 'r') as infile:

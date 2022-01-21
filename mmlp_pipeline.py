@@ -51,7 +51,7 @@ def main(args):
 				merged_rep_predictions_files[hypothesis_filename] = gcv.merge_predictions(merged_parts_prediction_files[hypothesis_filename],hypothesis_filename.replace("hypothesis.txt","merged_gene_predictions_final.txt"))
 				gcv_files.extend(merged_parts_prediction_files[hypothesis_filename])
 				gcv_files.append(merged_rep_predictions_files[hypothesis_filename])
-				gcv_files.append(gcv.main(merged_rep_predictions_files[hypothesis_filename]))
+				gcv_files.append(gcv.main(merged_rep_predictions_files[hypothesis_filename], gene_limit=args.gene_display_limit))
 		os.mkdir(args.output)
 		for tempdir in tempdir_list:
 			shutil.move(tempdir, args.output)
@@ -83,7 +83,7 @@ def main(args):
 			file.write("{}\t{}\n".format("Hypothesis", "HSS"))
 			for hypothesis_filename in hypothesis_file_list:
 				file.write("{}\t{}\n".format(hypothesis_filename.replace("_hypothesis.txt", ""), HSS[hypothesis_filename]))
-				gcv_files.append(gcv.main(os.path.join(args.output,hypothesis_filename.replace("hypothesis.txt", "gene_predictions.txt"))))
+				gcv_files.append(gcv.main(os.path.join(args.output,hypothesis_filename.replace("hypothesis.txt", "gene_predictions.txt")),gene_limit=args.gene_display_limit))
 		for file in gcv_files:
 			if os.path.dirname(file)!=os.path.normpath(args.output):
 				shutil.move(file, args.output)
@@ -106,6 +106,8 @@ if __name__ == '__main__':
 	parser.add_argument("--sparsify", help="Iteratively increase sparsity until selected set of genes fits in one partition.", action='store_true', default=False)
 	parser.add_argument("--method", help="SGLasso type to use. Options are \"logistic\", \"leastr\", or \"ol_leastr\". Defaults to \"leastr\".", type=str, default="leastr")
 	parser.add_argument("--slep_opts", help="File of tab-separated name-value pairs (one per line) to specify SLEP options.", type=str, default=None)
+	parser.add_argument("--gene_penalties", help="File of tab-separated name-value pairs (one per line) to specify penalty score for each gene/group.", type=str, default=None)
+	parser.add_argument("--gene_display_limit", help="Limits the number of genes displayed in the generated graph images.", type=int, default=100)
 	args = parser.parse_args()
 	score_tables = main(args)
 	gene_target = None
@@ -142,11 +144,12 @@ if __name__ == '__main__':
 				with open(aln_list_filename, 'w') as file:
 					with open(args.aln_list, 'r') as original_file:
 						stashed_gene_groups = []
-						nonzero_genes = [key for key in score_tables[hypothesis].keys() if score_tables[hypothesis][key][0] > 0]
+						nonzero_genes = [os.path.basename(key) for key in score_tables[hypothesis].keys() if score_tables[hypothesis][key][0] > 0]
 						#print(nonzero_genes)
 						new_gene_groups = []
 						for line in original_file:
 							gene_group = line.strip().split(",")
+							#print(len(gene_group))
 							new_gene_group = sorted([os.path.splitext(os.path.basename(val))[0] for val in gene_group if os.path.splitext(os.path.basename(val))[0] in nonzero_genes])
 							#print("{}\t::\t{}".format(",".join(gene_group), ",".join(new_gene_group)))
 							if tuple(new_gene_group) not in stashed_gene_groups:
