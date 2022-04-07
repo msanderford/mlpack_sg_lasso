@@ -83,6 +83,43 @@ arma::rowvec& SGLasso::Train(const arma::mat& features,
   if ( slep_opts.find("tol") != slep_opts.end() ) {
 	opts_tol = std::stod(slep_opts["tol"]);
   }
+  string line;
+  if ( slep_opts.find("nu") != slep_opts.end() ) {
+        vector<float> opts_nu;
+        ifstream nuFile (std::stod(slep_opts["nu"]));
+        if (nuFile.is_open())
+        {
+          while (getline(nuFile, line))
+          {
+            trim(line);
+            opts_nu.push_back(std::stod(line));
+          }
+        }
+  }
+  if ( slep_opts.find("mu") != slep_opts.end() ) {
+        vector<float> opts_mu;
+        ifstream muFile (std::stod(slep_opts["mu"]));
+        if (muFile.is_open())
+        {
+          while (getline(muFile, line))
+          {
+            trim(line);
+            opts_mu.push_back(std::stod(line));
+          }
+        }
+  }
+  vector<float> opts_sWeight;
+  if ( slep_opts.find("sWeight") != slep_opts.end() ) {
+        ifstream sWeightFile (std::stod(slep_opts["sWeight"]));
+        if (sWeightFile.is_open())
+        {
+          while (getline(sWeightFile, line))
+          {
+            trim(line);
+            opts_sWeight.push_back(std::stod(line));
+          }
+        }
+  }
 
   /*
    * We want to calculate the a_i coefficients of:
@@ -126,16 +163,31 @@ arma::rowvec& SGLasso::Train(const arma::mat& features,
 
   //sgLogisticR.m:177-195
   arma::colvec sample_weights(m);
+  arma::uvec p_flag = arma::find(y == 1);
+  arma::uvec not_p_flag = arma::find(y != 1);
+  double m1, m2;
+  if (opts_sWeight.size() == 2)
+  {
+    std::cout << "Using sample weights of " << opts_sWeight[0] << "(positive) and " << opts_sWeight[1] << "(negative)" << std::endl;
+    m1 = p_flag.n_elem * opts_sWeight[0];
+    m2 = not_p_flag.n_elem * opts_sWeight[1];
+    sample_weights(p_flag) = opts_sWeight[0] / (m1 + m2);
+    sample_weights(not_p_flag) = opts_sWeight[1] / (m1 + m2);
+    
+  } else if (opts_sWeight.size() != 0) {
+    std::cout << "Invalid sample weights specified, defaulting to unweighted samples." << std::endl;
+    sample_weights.fill(1.0/m);
+  } else {
   sample_weights.fill(1.0/m);
+  }
 
 //std::cout << "1..." << std::endl;
 
   //sgLogisticR.m:200-202
-  arma::uvec p_flag = arma::find(y == 1);
-  arma::uvec not_p_flag = arma::find(y != 1);
   arma::colvec b(m);
 //std::cout << "p_flag.n_elem:" << p_flag.n_elem << std::endl;
-  double m1 = static_cast<double>(p_flag.n_elem) / (double)m;
+  //double m1 = static_cast<double>(p_flag.n_elem) / (double)m;
+  double m1 = static_cast<double>(sample_weights(p_flag)) / (double)m;
   double m2 = 1 - m1;
 
   //sgLogisticR.m:205-241
