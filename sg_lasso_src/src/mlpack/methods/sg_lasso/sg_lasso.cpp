@@ -49,6 +49,15 @@ arma::rowvec& SGLasso::Train(const arma::mat& features,
                                const bool intercept)
 {
   this->intercept = intercept;
+  auto trim = [](std::string& s)
+  {
+     size_t p = s.find_first_not_of(" \t\r\n");
+     s.erase(0, p);
+
+     p = s.find_last_not_of(" \t\r\n");
+     if (std::string::npos != p)
+        s.erase(p+1);
+  };
 
   //Set all optional parameters to defaults
   int opts_maxIter = 100;
@@ -83,10 +92,10 @@ arma::rowvec& SGLasso::Train(const arma::mat& features,
   if ( slep_opts.find("tol") != slep_opts.end() ) {
 	opts_tol = std::stod(slep_opts["tol"]);
   }
-  string line;
+  std::string line;
   if ( slep_opts.find("nu") != slep_opts.end() ) {
-        vector<float> opts_nu;
-        ifstream nuFile (std::stod(slep_opts["nu"]));
+        std::vector<float> opts_nu;
+        std::ifstream nuFile (slep_opts["nu"]);
         if (nuFile.is_open())
         {
           while (getline(nuFile, line))
@@ -97,8 +106,8 @@ arma::rowvec& SGLasso::Train(const arma::mat& features,
         }
   }
   if ( slep_opts.find("mu") != slep_opts.end() ) {
-        vector<float> opts_mu;
-        ifstream muFile (std::stod(slep_opts["mu"]));
+        std::vector<float> opts_mu;
+        std::ifstream muFile (slep_opts["mu"]);
         if (muFile.is_open())
         {
           while (getline(muFile, line))
@@ -108,9 +117,9 @@ arma::rowvec& SGLasso::Train(const arma::mat& features,
           }
         }
   }
-  vector<float> opts_sWeight;
+  std::vector<float> opts_sWeight;
   if ( slep_opts.find("sWeight") != slep_opts.end() ) {
-        ifstream sWeightFile (std::stod(slep_opts["sWeight"]));
+        std::ifstream sWeightFile (slep_opts["sWeight"]);
         if (sWeightFile.is_open())
         {
           while (getline(sWeightFile, line))
@@ -171,8 +180,8 @@ arma::rowvec& SGLasso::Train(const arma::mat& features,
     std::cout << "Using sample weights of " << opts_sWeight[0] << "(positive) and " << opts_sWeight[1] << "(negative)" << std::endl;
     m1 = p_flag.n_elem * opts_sWeight[0];
     m2 = not_p_flag.n_elem * opts_sWeight[1];
-    sample_weights(p_flag) = opts_sWeight[0] / (m1 + m2);
-    sample_weights(not_p_flag) = opts_sWeight[1] / (m1 + m2);
+    sample_weights(p_flag).fill(opts_sWeight[0] / (m1 + m2));
+    sample_weights(not_p_flag).fill(opts_sWeight[1] / (m1 + m2));
     
   } else if (opts_sWeight.size() != 0) {
     std::cout << "Invalid sample weights specified, defaulting to unweighted samples." << std::endl;
@@ -187,8 +196,8 @@ arma::rowvec& SGLasso::Train(const arma::mat& features,
   arma::colvec b(m);
 //std::cout << "p_flag.n_elem:" << p_flag.n_elem << std::endl;
   //double m1 = static_cast<double>(p_flag.n_elem) / (double)m;
-  double m1 = static_cast<double>(sample_weights(p_flag)) / (double)m;
-  double m2 = 1 - m1;
+  m1 = arma::sum(sample_weights(p_flag)) / (double)m;
+  m2 = 1 - m1;
 
   //sgLogisticR.m:205-241
   double* lambda;
