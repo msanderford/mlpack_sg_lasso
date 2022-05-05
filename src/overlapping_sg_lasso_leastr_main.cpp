@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
 
   if (field(field.n_cols - 1) == 0){field.resize(field.n_elem - 1);}
 
-  sgl = new OLSGLassoLeastR(features, responses, opts_ind, field, lambda, processSlepOpts("slep"));
+  sgl = new OLSGLassoLeastR(features, responses, opts_ind, field, lambda, processSlepOpts(program.get<std::string>("slep")));
 
   //std::cout << sgl->modelToXMLString();
   ofstream modelXMLFile(program.get<std::string>("output") + ".xml");

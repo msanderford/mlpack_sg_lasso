@@ -77,7 +77,7 @@ int main(int argc, char *argv[]) {
 
   opts_ind.load(csv_name(program.get<std::string>("groups"),csv_opts::trans));
 
-  sgl = new SGLasso(features, responses, opts_ind, lambda, processSlepOpts("slep"));
+  sgl = new SGLasso(features, responses, opts_ind, lambda, processSlepOpts(program.get<std::string>("slep")));
 
   //std::cout << sgl->modelToXMLString();
   ofstream modelXMLFile(program.get<std::string>("output") + ".xml");
