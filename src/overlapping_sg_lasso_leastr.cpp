@@ -1,7 +1,8 @@
 //#include <algorithm>
 #include "overlapping_sg_lasso_leastr.hpp"
 #include "overlapping.hpp"
-
+#include <sstream>
+#include <iomanip>
 
 
 OLSGLassoLeastR::OLSGLassoLeastR(const arma::mat& features,
@@ -32,7 +33,9 @@ std::string OLSGLassoLeastR::modelToXMLString()
   //for(int i=0; i<this->parameters.n_cols; i++)
   for(int i=0; i<this->parameters.n_elem; i++)
   {
-    XMLString = XMLString + std::string(i_level * 8, ' ') + "<item>" + std::to_string(this->parameters(i)) + "</item>" + "\n";
+    std::ostringstream streamObj;
+    streamObj << std::setprecision(17) << std::scientific << this->parameters(i);
+    XMLString = XMLString + std::string(i_level * 8, ' ') + "<item>" + streamObj.str() + "</item>" + "\n";
   }
   i_level--;
   XMLString = XMLString + std::string(i_level * 8, ' ') + "</parameters>" + "\n";

@@ -1,16 +1,8 @@
 
 #include "sg_lasso_leastr.hpp"
-//#include <mlpack/core/util/log.hpp>
+#include <sstream>
+#include <iomanip>
 
-//using namespace mlpack;
-//using namespace mlpack::regression;
-
-//SGLassoLeastR::SGLassoLeastR(const arma::mat& features,
-//                                   const arma::rowvec& responses,XMLString = XMLString + std::string(i_level * 8, ' ') + "<n_rows>" + std::to_string(this->intercept_value) + "</n_rows>" + "\n";
-//                                   const double lambda,
-//                                   const bool intercept) :
-//    SGLassoLeastR(features, responses, arma::rowvec(), lambda, intercept)
-//{}
 
 SGLassoLeastR::SGLassoLeastR(const arma::mat& features,
                                    const arma::rowvec& responses,
@@ -39,7 +31,9 @@ std::string SGLassoLeastR::modelToXMLString()
   //for(int i=0; i<this->parameters.n_cols; i++)
   for(int i=0; i<this->parameters.n_elem; i++)
   {
-    XMLString = XMLString + std::string(i_level * 8, ' ') + "<item>" + std::to_string(this->parameters(i)) + "</item>" + "\n";
+    std::ostringstream streamObj;
+    streamObj << std::setprecision(17) << std::scientific << this->parameters(i);
+    XMLString = XMLString + std::string(i_level * 8, ' ') + "<item>" + streamObj.str() + "</item>" + "\n";
   }
   i_level--;
   XMLString = XMLString + std::string(i_level * 8, ' ') + "</parameters>" + "\n";
