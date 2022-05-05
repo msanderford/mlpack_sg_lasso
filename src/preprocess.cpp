@@ -219,6 +219,8 @@ void alnData::processFastaFileList(string alnFileList)
 			}
 		}
 		fileList.close();
+	} else {
+		throw std::invalid_argument("Could not open alignment list "+ alnFileList +" for reading.");
 	}
 }
 
