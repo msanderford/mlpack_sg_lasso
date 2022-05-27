@@ -85,7 +85,7 @@ class OLSGLassoLeastR
                const arma::rowvec& field,
                const bool intercept = true);
 
-  std::string modelToXMLString();
+  void writeModelToXMLStream(std::ofstream& XMLFile);
 
   /**
    * Calculate y_i for each data point in points.

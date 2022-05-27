@@ -18,34 +18,33 @@ OLSGLassoLeastR::OLSGLassoLeastR(const arma::mat& features,
   Train(features, responses, weights, slep_opts, field, intercept);
 }
 
-std::string OLSGLassoLeastR::modelToXMLString()
+void OLSGLassoLeastR::writeModelToXMLStream(std::ofstream& XMLFile)
 {
   int i_level = 0;
-  std::string XMLString = "";
-  XMLString = XMLString + std::string(i_level * 8, ' ') + "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\" ?>" + "\n";
-  XMLString = XMLString + std::string(i_level * 8, ' ') + "<model>" + "\n";
+  //std::string XMLString = "";
+  XMLFile << std::string(i_level * 8, ' ') + "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\" ?>" + "\n";
+  XMLFile << std::string(i_level * 8, ' ') + "<model>" + "\n";
   i_level++;
-  XMLString = XMLString + std::string(i_level * 8, ' ') + "<parameters>" + "\n";
+  XMLFile << std::string(i_level * 8, ' ') + "<parameters>" + "\n";
   i_level++;
-  XMLString = XMLString + std::string(i_level * 8, ' ') + "<n_rows>" + std::to_string(this->parameters.n_cols) + "</n_rows>" + "\n";
-  XMLString = XMLString + std::string(i_level * 8, ' ') + "<n_cols>" + std::to_string(this->parameters.n_rows) + "</n_cols>" + "\n";
-  XMLString = XMLString + std::string(i_level * 8, ' ') + "<n_elem>" + std::to_string(this->parameters.n_elem) + "</n_elem>" + "\n";
+  XMLFile << std::string(i_level * 8, ' ') + "<n_rows>" + std::to_string(this->parameters.n_cols) + "</n_rows>" + "\n";
+  XMLFile << std::string(i_level * 8, ' ') + "<n_cols>" + std::to_string(this->parameters.n_rows) + "</n_cols>" + "\n";
+  XMLFile << std::string(i_level * 8, ' ') + "<n_elem>" + std::to_string(this->parameters.n_elem) + "</n_elem>" + "\n";
   //for(int i=0; i<this->parameters.n_cols; i++)
   for(int i=0; i<this->parameters.n_elem; i++)
   {
     std::ostringstream streamObj;
     streamObj << std::setprecision(17) << std::scientific << this->parameters(i);
-    XMLString = XMLString + std::string(i_level * 8, ' ') + "<item>" + streamObj.str() + "</item>" + "\n";
+    XMLFile << std::string(i_level * 8, ' ') + "<item>" + streamObj.str() + "</item>" + "\n";
   }
   i_level--;
-  XMLString = XMLString + std::string(i_level * 8, ' ') + "</parameters>" + "\n";
-  XMLString = XMLString + std::string(i_level * 8, ' ') + "<lambda1>" + std::to_string(this->lambda[0]) + "</lambda1>" + "\n";
-  XMLString = XMLString + std::string(i_level * 8, ' ') + "<lambda2>" + std::to_string(this->lambda[1]) + "</lambda2>" + "\n";
-  XMLString = XMLString + std::string(i_level * 8, ' ') + "<intercept_value>" + std::to_string(this->intercept_value) + "</intercept_value>" + "\n";
+  XMLFile << std::string(i_level * 8, ' ') + "</parameters>" + "\n";
+  XMLFile << std::string(i_level * 8, ' ') + "<lambda1>" + std::to_string(this->lambda[0]) + "</lambda1>" + "\n";
+  XMLFile << std::string(i_level * 8, ' ') + "<lambda2>" + std::to_string(this->lambda[1]) + "</lambda2>" + "\n";
+  XMLFile << std::string(i_level * 8, ' ') + "<intercept_value>" + std::to_string(this->intercept_value) + "</intercept_value>" + "\n";
   i_level--;
-  XMLString = XMLString + std::string(i_level * 8, ' ') + "</model>" + "\n";
+  XMLFile << std::string(i_level * 8, ' ') + "</model>" + "\n";
 
-  return XMLString;
 }
 
 

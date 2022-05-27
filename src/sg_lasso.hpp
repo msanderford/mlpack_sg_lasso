@@ -84,7 +84,7 @@ class SGLasso
                std::map<std::string, std::string> slep_opts,
                const bool intercept = true);
 
-  std::string modelToXMLString();
+  void writeModelToXMLStream(std::ofstream& XMLFile);
 
   /**
    * Calculate y_i for each data point in points.

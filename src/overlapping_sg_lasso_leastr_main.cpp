@@ -7,7 +7,7 @@ using namespace arma;
 
 
 map<string, string> processSlepOpts(string filename);
-string modelToXMLString(string);
+string writeModelToXMLStream(string);
 
 int main(int argc, char *argv[]) {
   argparse::ArgumentParser program("sg_lasso");
@@ -83,12 +83,13 @@ int main(int argc, char *argv[]) {
 
   sgl = new OLSGLassoLeastR(features, responses, opts_ind, field, lambda, processSlepOpts(program.get<std::string>("slep")));
 
-  //std::cout << sgl->modelToXMLString();
-  ofstream modelXMLFile(program.get<std::string>("output") + ".xml");
-  if (modelXMLFile.is_open())
+  //std::cout << sgl->writeModelToXMLStream();
+  ofstream fileStream(program.get<std::string>("output") + ".xml");
+  if (fileStream.is_open())
   {
-    modelXMLFile << sgl->modelToXMLString();
-    modelXMLFile.close();
+    //fileStream << sgl->writeModelToXMLStream();
+    sgl->writeModelToXMLStream(fileStream);
+    fileStream.close();
   } else {
     std::cout << "Could not open output file for writing." << std::endl;
   }
