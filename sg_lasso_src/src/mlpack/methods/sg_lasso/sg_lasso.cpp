@@ -196,7 +196,7 @@ arma::rowvec& SGLasso::Train(const arma::mat& features,
   arma::colvec b(m);
 //std::cout << "p_flag.n_elem:" << p_flag.n_elem << std::endl;
   //double m1 = static_cast<double>(p_flag.n_elem) / (double)m;
-  m1 = arma::sum(sample_weights(p_flag)) / (double)m;
+  m1 = arma::sum(sample_weights(p_flag)) / arma::sum(sample_weights)m;
   m2 = 1 - m1;
 
   //sgLogisticR.m:205-241
