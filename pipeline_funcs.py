@@ -104,7 +104,7 @@ def generate_gene_prediction_table(weights_filename, responses_filename, groups_
 	field = list(range(0, len(model["weight_list"])))
 	if field_filename is not None:
 		with open(field_filename, 'r') as file:
-			field = [int(x)-1 for x in file.readline().strip().split(",")]
+			field = [int(x)-1 for x in file.readline().strip().split(",") if len(x) > 0]
 	group_indices = list(zip(line1_data, line2_data, line3_data))
 	group_weights = []
 	#print(len(model["weight_list"]))
@@ -172,9 +172,9 @@ def xml_model_to_dict(model_filename):
 	# Read weights and responses file
 	xml_weights = ET.parse(model_filename)
 	xml_tree = xml_weights.getroot()
-	if xml_tree[0].tag != "model":
+	if xml_tree.tag != "model":
 		raise Exception("Unexpected model XML format")
-	for child1 in xml_tree[0]:
+	for child1 in xml_tree:
 		if child1.tag == "intercept_value":
 			params["intercept"] = float(child1.text)
 		elif child1.tag == "lambda1":
@@ -368,9 +368,9 @@ def run_mlp(features_filename_list, groups_filename_list, response_filename_list
 	for response_filename, features_filename, groups_filename, field_filename in zip(response_filename_list, features_filename_list, groups_filename_list, field_filename_list):
 		basename = str(os.path.splitext(os.path.basename(response_filename))[0]).replace("response_","")
 		if slep_opts is None:
-			mlp_cmd = "{} -v -f {} -z {} -y {} -n {} -r {} -w {}".format(mlp_exe, features_filename, sparsity, group_sparsity, groups_filename, response_filename, basename + "_out_feature_weights.xml")
+			mlp_cmd = "{} -f {} -z {} -y {} -n {} -r {} -w {}".format(mlp_exe, features_filename, sparsity, group_sparsity, groups_filename, response_filename, basename + "_out_feature_weights.xml")
 		else:
-			mlp_cmd = "{} -v -f {} -z {} -y {} -n {} -r {} -s {} -w {}".format(mlp_exe, features_filename, sparsity, group_sparsity, groups_filename, response_filename, slep_opts, basename + "_out_feature_weights.xml")
+			mlp_cmd = "{} -f {} -z {} -y {} -n {} -r {} -s {} -w {}".format(mlp_exe, features_filename, sparsity, group_sparsity, groups_filename, response_filename, slep_opts, basename + "_out_feature_weights.xml")
 		if method == "overlapping_sg_lasso_leastr":
 			mlp_cmd = mlp_cmd + " -g {}".format(field_filename)
 		print(mlp_cmd)
