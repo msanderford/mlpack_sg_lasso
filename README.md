@@ -1,10 +1,8 @@
 # Installation
 
-MLPack dependencies are listed here: https://github.com/mlpack/mlpack#3-dependencies
-
 To install all dependencies (hopefully):
 
-	sudo apt -y install gcc g++ perl pkgconf make cmake liblapack-dev libblas-dev libboost-all-dev libarmadillo-dev libensmallen-dev
+	sudo apt -y install g++-8 libopenblas-dev liblapack-dev
 
 To build everything, do the following:
 
