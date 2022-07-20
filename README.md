@@ -6,8 +6,8 @@ To install all dependencies (hopefully):
 
 To build everything, do the following:
 
-	git clone https://github.com/msanderford/mlpack_sg_lasso/
-	cd mlpack_sg_lasso
+	git clone -b ESL_master https://github.com/msanderford/mlpack_sg_lasso/ ESL
+	cd ESL
 	bash build_script.sh
 
 # Components
@@ -23,7 +23,7 @@ To build everything, do the following:
 sample usage:
 
 	cd sample_files
-	../mlpack-3.2.2/build/bin/preprocess angiosperm_20spec_pred.txt angiosperm_100_sample_alns.txt angiosperm_input n ct 2
+	../bin/preprocess angiosperm_20spec_pred.txt angiosperm_100_sample_alns.txt angiosperm_input n ct 2
 	mv angiosperm_input ..
 	cd ..
 
@@ -64,7 +64,7 @@ While input where gene2 shares properties with both gene1 and gene3 might look l
 
 sample usage:
 
-	mlpack-3.2.2/build/bin/mlpack_sg_lasso_leastr -v -f angiosperm_input/feature_angiosperm_input.txt -z 0.1 -y 0.5 -n angiosperm_input/group_indices_angiosperm_input.txt -r angiosperm_input/response_angiosperm_input.txt -w angiosperm_out_feature_weights.xml
+	bin/mlpack_sg_lasso_leastr -v -f angiosperm_input/feature_angiosperm_input.txt -z 0.1 -y 0.5 -n angiosperm_input/group_indices_angiosperm_input.txt -r angiosperm_input/response_angiosperm_input.txt -w angiosperm_out_feature_weights.xml
 
 
 ## mlpack_overlapping_sg_lasso_leastr
@@ -81,7 +81,7 @@ sample usage:
 
 sample usage:
 
-	mlpack-3.2.2/build/bin/mlpack_overlapping_sg_lasso_leastr -v -f angiosperm_input/feature_angiosperm_input.txt -z 0.1 -y 0.5 -n angiosperm_input/group_indices_angiosperm_input.txt -g angiosperm_input/field_angiosperm_input.txt -r angiosperm_input/response_angiosperm_input.txt -w angiosperm_out_feature_weights.xml
+	bin/mlpack_overlapping_sg_lasso_leastr -v -f angiosperm_input/feature_angiosperm_input.txt -z 0.1 -y 0.5 -n angiosperm_input/group_indices_angiosperm_input.txt -g angiosperm_input/field_angiosperm_input.txt -r angiosperm_input/response_angiosperm_input.txt -w angiosperm_out_feature_weights.xml
 
 
 # Parsing outputs
