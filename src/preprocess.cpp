@@ -90,6 +90,10 @@ void alnData::readTraits(string speciesFile)
 		while (getline(speciesList, speciesTrait))
 		{
 			trim(speciesTrait);
+			if (speciesTrait.length() < 1)
+			{
+				continue;
+			}
 			species = speciesTrait.substr(0, speciesTrait.find(delimiter));
 			trait = stof(speciesTrait.substr(speciesTrait.find(delimiter), string::npos));
 			if (trait != 0)
