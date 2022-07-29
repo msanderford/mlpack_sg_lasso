@@ -99,6 +99,8 @@ void alnData::readTraits(string speciesFile)
 			}
 		}
 		speciesList.close();
+	} else {
+		throw std::filesystem::filesystem_error("\nCould not open responses file.\n");
 	}
 }
 
@@ -202,6 +204,10 @@ void alnData::processFastaFileList(string alnFileList)
 		while (getline(fileList,fastaFileGroup))
 		{
 			trim(fastaFileGroup);
+			if (fastaFileGroup.length() < 1)
+			{
+				continue;
+			}
 			this->groups.push_back(fastaFileGroup);
 			stringstream ss(fastaFileGroup);
 			while(getline(ss, fastaFileName, ','))
