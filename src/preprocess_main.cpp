@@ -68,6 +68,10 @@ int main(int argc, char *argv[])
 			{
 				data->setDiskCaching(true);
 			}
+			if (strcmp(argv[i], "useTabs") == 0)
+			{
+				data->setDelimiter("\t");
+			}
 		}
 	}
 	
