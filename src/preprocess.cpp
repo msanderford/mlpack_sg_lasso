@@ -99,8 +99,6 @@ void alnData::readTraits(string speciesFile)
 			}
 		}
 		speciesList.close();
-	} else {
-		throw std::filesystem::filesystem_error("\nCould not open responses file.\n");
 	}
 }
 
