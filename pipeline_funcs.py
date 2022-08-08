@@ -368,9 +368,9 @@ def run_mlp(features_filename_list, groups_filename_list, response_filename_list
 	for response_filename, features_filename, groups_filename, field_filename in zip(response_filename_list, features_filename_list, groups_filename_list, field_filename_list):
 		basename = str(os.path.splitext(os.path.basename(response_filename))[0]).replace("response_","")
 		if slep_opts is None:
-			mlp_cmd = "{} -f {} -z {} -y {} -n {} -r {} -w {}".format(mlp_exe, features_filename, sparsity, group_sparsity, groups_filename, response_filename, basename + "_out_feature_weights.xml")
+			mlp_cmd = "{} -f {} -z {} -y {} -n {} -r {} -w {}".format(mlp_exe, features_filename, sparsity, group_sparsity, groups_filename, response_filename, basename + "_out_feature_weights")
 		else:
-			mlp_cmd = "{} -f {} -z {} -y {} -n {} -r {} -s {} -w {}".format(mlp_exe, features_filename, sparsity, group_sparsity, groups_filename, response_filename, slep_opts, basename + "_out_feature_weights.xml")
+			mlp_cmd = "{} -f {} -z {} -y {} -n {} -r {} -s {} -w {}".format(mlp_exe, features_filename, sparsity, group_sparsity, groups_filename, response_filename, slep_opts, basename + "_out_feature_weights")
 		if method == "overlapping_sg_lasso_leastr":
 			mlp_cmd = mlp_cmd + " -g {}".format(field_filename)
 		print(mlp_cmd)
