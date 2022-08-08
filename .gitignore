@@ -3,3 +3,4 @@ partial_rebuild.sh
 sg_lasso_preprocessing_src
 mlpack-3.2.2.tar.gz
 mlpack-3.2.2/
+bin/

@@ -1,14 +1,12 @@
 # Installation
 
-To install all dependencies (hopefully):
+To set up, simply run setup.sh:
 
-	sudo apt -y install g++-8 libopenblas-dev liblapack-dev
+	bash setup.sh
 
-To build everything, do the following:
+To test that everything is working, run base_test.sh
 
-	git clone -b ESL_master https://github.com/msanderford/mlpack_sg_lasso/ ESL
-	cd ESL
-	bash build_script.sh
+	bash base_test.sh
 
 # Components
 
