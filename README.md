@@ -6,8 +6,8 @@ To install all dependencies (hopefully):
 
 To build everything, do the following:
 
-	git clone -b ESL_master https://github.com/msanderford/mlpack_sg_lasso/ ESL
-	cd ESL
+	git clone -b ESL_dev https://github.com/msanderford/mlpack_sg_lasso/ ESL_dev
+	cd ESL_dev
 	bash build_script.sh
 
 # Components
