@@ -10,7 +10,7 @@ from matplotlib.colors import TwoSlopeNorm
 import numpy as np
 
 
-def main(predictions_table, lead_cols=4, response_idx=2, prediction_idx=3, output=None, gene_limit=100):
+def main(predictions_table, lead_cols=4, response_idx=2, prediction_idx=3, output=None, ssq_threshold=0, gene_limit=100):
 	sample_size = 24
 	sample_size = None
 	with open(predictions_table, 'r') as file:
@@ -18,9 +18,9 @@ def main(predictions_table, lead_cols=4, response_idx=2, prediction_idx=3, outpu
 		num_cols = len(header)
 		file.seek(0)
 		if sample_size is None:
-			data = np.genfromtxt(file, dtype='U', skip_header=1, usemask=True, missing_values='N/A', encoding=None)
+			data = np.genfromtxt(file, dtype='U', skip_header=1, usemask=True, missing_values="N/A", encoding=None)
 		else:
-			data = np.genfromtxt(file, dtype='U', skip_header=1, usemask=True, missing_values='N/A', encoding=None, usecols=range(0, lead_cols + sample_size))
+			data = np.genfromtxt(file, dtype='U', skip_header=1, usemask=True, missing_values="N/A", encoding=None, usecols=range(0, lead_cols + sample_size))
 			header = header[0: lead_cols + sample_size]
 		seqid_list = [(val)[0] for val in data]
 		data = np.asarray([list(val)[1:] for val in data], dtype="float")
@@ -32,6 +32,8 @@ def main(predictions_table, lead_cols=4, response_idx=2, prediction_idx=3, outpu
 	# Sort columns by sum of contributions
 	ssq_scores = list(zip(range(3, num_cols), [np.sum(np.nan_to_num(gene_col)**2) for gene_col in data.transpose()[3:]], header[4:]))
 	ssq_scores.sort(key=lambda tup: tup[1], reverse=True)
+	if ssq_threshold > 0:
+		ssq_scores = [val for val in ssq_scores if val[1] >= ssq_threshold]
 	sum_scores = list(zip(range(3, num_cols), [np.sum(gene_col) for gene_col in data.transpose()[3:]], header[4:]))
 	sum_scores.sort(key=lambda tup: tup[1], reverse=True)
 	data = data[:, list(range(0, 3)) + [val[0] for val in ssq_scores[0:gene_limit]]]
@@ -143,5 +145,6 @@ if __name__ == '__main__':
 	parser.add_argument("--response_idx", help="1-based index of response column.", type=int, default=2)
 	parser.add_argument("--prediction_idx", help="1-based index of prediction column.", type=int, default=3)
 	parser.add_argument("--output", help="Output image file.", type=str, default=None)
+	parser.add_argument("--threshold", help="Drop columns with sum of squares below threshold value.", type=float, default=0)
 	args = parser.parse_args()
-	main(args.predictions_table, args.lead_cols, args.response_idx, args.prediction_idx, args.output)
+	main(args.predictions_table, args.lead_cols, args.response_idx, args.prediction_idx, args.output, args.threshold)
