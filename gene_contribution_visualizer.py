@@ -18,9 +18,9 @@ def main(predictions_table, lead_cols=4, response_idx=2, prediction_idx=3, outpu
 		num_cols = len(header)
 		file.seek(0)
 		if sample_size is None:
-			data = np.genfromtxt(file, dtype=None, skip_header=1, missing_values="N/A", encoding=None)
+			data = np.genfromtxt(file, dtype='U', skip_header=1, usemask=True, missing_values="N/A", encoding=None)
 		else:
-			data = np.genfromtxt(file, dtype=None, skip_header=1, missing_values="N/A", encoding=None, usecols=range(0, lead_cols + sample_size))
+			data = np.genfromtxt(file, dtype='U', skip_header=1, usemask=True, missing_values="N/A", encoding=None, usecols=range(0, lead_cols + sample_size))
 			header = header[0: lead_cols + sample_size]
 		seqid_list = [(val)[0] for val in data]
 		data = np.asarray([list(val)[1:] for val in data], dtype="float")
