@@ -51,7 +51,7 @@ def main(args):
 				merged_rep_predictions_files[hypothesis_filename] = gcv.merge_predictions(merged_parts_prediction_files[hypothesis_filename],hypothesis_filename.replace("hypothesis.txt","merged_gene_predictions_final.txt"))
 				gcv_files.extend(merged_parts_prediction_files[hypothesis_filename])
 				gcv_files.append(merged_rep_predictions_files[hypothesis_filename])
-				gcv_files.append(gcv.main(merged_rep_predictions_files[hypothesis_filename], gene_limit=args.gene_display_limit))
+				gcv_files.append(gcv.main(merged_rep_predictions_files[hypothesis_filename], gene_limit=args.gene_display_limit, ssq_threshold=args.gene_display_cutoff))
 		os.mkdir(args.output)
 		for tempdir in tempdir_list:
 			shutil.move(tempdir, args.output)
@@ -83,7 +83,7 @@ def main(args):
 			file.write("{}\t{}\n".format("Hypothesis", "HSS"))
 			for hypothesis_filename in hypothesis_file_list:
 				file.write("{}\t{}\n".format(hypothesis_filename.replace("_hypothesis.txt", ""), HSS[hypothesis_filename]))
-				gcv_files.append(gcv.main(os.path.join(args.output,hypothesis_filename.replace("hypothesis.txt", "gene_predictions.txt")),gene_limit=args.gene_display_limit))
+				gcv_files.append(gcv.main(os.path.join(args.output,hypothesis_filename.replace("hypothesis.txt", "gene_predictions.txt")),gene_limit=args.gene_display_limit, ssq_threshold=args.gene_display_cutoff))
 		for file in gcv_files:
 			if os.path.dirname(file)!=os.path.normpath(args.output):
 				shutil.move(file, args.output)
@@ -108,6 +108,7 @@ if __name__ == '__main__':
 	parser.add_argument("--slep_opts", help="File of tab-separated name-value pairs (one per line) to specify SLEP options.", type=str, default=None)
 	parser.add_argument("--gene_penalties", help="File of penalty values (same order as aln_list) to specify penalty score for each gene.", type=str, default=None)
 	parser.add_argument("--gene_display_limit", help="Limits the number of genes displayed in the generated graph images.", type=int, default=100)
+	parser.add_argument("--gene_display_cutoff", help="Limits genes displayed in the generated graph images to those with sum-of-squares greater than cutoff value.", type=int, default=0.0)
 	args = parser.parse_args()
 	score_tables = main(args)
 	gene_target = None
@@ -203,6 +204,5 @@ if __name__ == '__main__':
 	# 	features_filename, groups_filename, response_filename_list = pf.generate_input_matrices("sample_files/angiosperm_100_sample_alns.txt", hypothesis_file_list)
 	# 	weights_file_list = pf.run_mlp(features_filename, groups_filename, response_filename_list)
 	# 	pf.process_weights(weights_file_list, hypothesis_file_list, groups_filename, features_filename)
-
 
 
