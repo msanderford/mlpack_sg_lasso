@@ -114,7 +114,7 @@ map<string, string> processSlepOpts(string filename)
       if (splitpos != std::string::npos)
       {
         opt_key = line.substr(0, line.find("\t"));
-        slep_opts[opt_key] = line.substr(line.find("\t"), std::string::npos);
+        slep_opts[opt_key] = line.substr(line.find("\t")+1, std::string::npos);
       }
     }
     optsFile.close();
