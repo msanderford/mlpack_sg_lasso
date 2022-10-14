@@ -198,17 +198,30 @@ def lookup_by_names(tree):
 	return names
 
 
-def generate_hypothesis_set(newick_filename, nodelist_filename=None, response_filename=None):
+def generate_hypothesis_set(newick_filename, nodelist_filename=None, response_filename=None, auto_name_nodes=False, cladesize_cutoff=0, auto_name_length=5):
 	tree = Phylo.parse(newick_filename, 'newick').__next__()
-	nodes = lookup_by_names(tree)
 	taxa_list = [x.name for x in tree.get_terminals()]
 	taxa_list.reverse()
+	auto_names = []
+	if auto_name_nodes:
+		i = 0
+		for clade in tree.find_clades():
+			if not clade.name:
+				new_name = "{}_{}".format(clade[0].get_terminals()[0].name[0:auto_name_length], clade[1].get_terminals()[0].name[0:auto_name_length])
+				if new_name in auto_names:
+					raise ValueError("Duplicate auto generated name: {}\nIncrease size of auto_name_length parameter and try again.".format(new_name))
+				else:
+					clade.name = "{}_{}".format(i, new_name)
+					auto_names += [new_name]
+					i += 1
+	nodes = lookup_by_names(tree)
 	# print(tree)
 	if nodelist_filename is None:
 		nodelist = [key for key in nodes if key not in taxa_list]
 	else:
 		with open(nodelist_filename, 'r') as file:
 			nodelist = [line.strip() for line in file]
+	nodelist = [x for x in nodelist if len(nodes[x].get_terminals()) >= cladesize_cutoff and len(nodes[x].get_terminals()) < len(taxa_list) ]
 	# print(nodelist)
 	responses = {}
 	if response_filename is None:

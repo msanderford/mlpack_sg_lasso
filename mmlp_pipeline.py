@@ -8,7 +8,7 @@ import gene_contribution_visualizer as gcv
 
 
 def main(args):
-	hypothesis_file_list = pf.generate_hypothesis_set(args.tree, args.nodelist, args.response)
+	hypothesis_file_list = pf.generate_hypothesis_set(args.tree, args.nodelist, args.response, args.auto_name_nodes, args.cladesize_cutoff, args.auto_name_length)
 	HSS = {}
 	missing_seqs = set()
 	merged_rep_predictions_files = {hypothesis_filename:[] for hypothesis_filename in hypothesis_file_list}
@@ -94,7 +94,11 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description="Phylogenetic hypothesis tester.")
 	parser.add_argument("tree", help="Input phylogeny to perform testing on.", type=str)
 	parser.add_argument("aln_list", help="List of alignment files to extract features from.", type=str)
-	parser.add_argument("--nodelist", help="File containing list of named internal nodes to test. If no file is specified, each named internal node of input phylogeny will be tested.", type=str, default=None)
+	parser.add_argument("--nodelist", help="File containing list of named internal nodes to test. If no file is specified, each named internal node of input phylogeny will be tested.",
+						type=str, default=None)
+	parser.add_argument("--auto_name_nodes", help="Assign automatically generated names to unnamed internal nodes, causing them to be tested.", action='store_true', default=False)
+	parser.add_argument("--auto_name_length", help="Number of characters to take from sequence IDs to generate internal node labels.", type=int, default=5)
+	parser.add_argument("--cladesize_cutoff", help="Internal nodes with fewer than cladesize_cutoff terminal descendants will not be tested.", type=int, default=0)
 	parser.add_argument("--response", help="File containing list of named node/response value pairs.", type=str, default=None)
 	parser.add_argument("-z", "--lambda1", help="Feature sparsity parameter.", type=float, default=0.1)
 	parser.add_argument("-y", "--lambda2", help="Group sparsity parameter.", type=float, default=0.1)
@@ -204,6 +208,5 @@ if __name__ == '__main__':
 	# 	features_filename, groups_filename, response_filename_list = pf.generate_input_matrices("sample_files/angiosperm_100_sample_alns.txt", hypothesis_file_list)
 	# 	weights_file_list = pf.run_mlp(features_filename, groups_filename, response_filename_list)
 	# 	pf.process_weights(weights_file_list, hypothesis_file_list, groups_filename, features_filename)
-
 
 
