@@ -198,20 +198,22 @@ def lookup_by_names(tree):
 	return names
 
 
-def generate_hypothesis_set(newick_filename, nodelist_filename=None, response_filename=None, auto_name_nodes=False, cladesize_cutoff=0, auto_name_length=5):
+def generate_hypothesis_set(newick_filename, nodelist_filename=None, response_filename=None, auto_name_nodes=False, cladesize_cutoff_lower=0, cladesize_cutoff_upper=None, auto_name_length=5, smart_sampling=None):
 	tree = Phylo.parse(newick_filename, 'newick').__next__()
 	taxa_list = [x.name for x in tree.get_terminals()]
+	if cladesize_cutoff_upper is None:
+		cladesize_cutoff_upper = len(taxa_list)
 	taxa_list.reverse()
 	auto_names = []
 	if auto_name_nodes:
 		i = 0
 		for clade in tree.find_clades():
 			if not clade.name:
-				new_name = "{}_{}".format(clade[0].get_terminals()[0].name[0:auto_name_length], clade[1].get_terminals()[0].name[0:auto_name_length])
+				new_name = "{}_{}_{}".format(i, clade[0].get_terminals()[0].name[0:auto_name_length], clade[1].get_terminals()[0].name[0:auto_name_length])
 				if new_name in auto_names:
 					raise ValueError("Duplicate auto generated name: {}\nIncrease size of auto_name_length parameter and try again.".format(new_name))
 				else:
-					clade.name = "{}_{}".format(i, new_name)
+					clade.name = new_name
 					auto_names += [new_name]
 					i += 1
 	nodes = lookup_by_names(tree)
@@ -221,14 +223,42 @@ def generate_hypothesis_set(newick_filename, nodelist_filename=None, response_fi
 	else:
 		with open(nodelist_filename, 'r') as file:
 			nodelist = [line.strip() for line in file]
-	nodelist = [x for x in nodelist if len(nodes[x].get_terminals()) >= cladesize_cutoff and len(nodes[x].get_terminals()) < len(taxa_list) ]
 	# print(nodelist)
+	nodelist = [x for x in nodelist if
+				len(nodes[x].get_terminals()) >= cladesize_cutoff_lower and len(nodes[x].get_terminals()) <= cladesize_cutoff_upper and len(
+					nodes[x].get_terminals()) < len(taxa_list)]
+	# print(nodelist)
+	# print(tree)
 	responses = {}
 	if response_filename is None:
 		for nodename in nodelist:
-			responses[nodename] = {x: -1 for x in taxa_list}
-			for terminal in nodes[nodename].get_terminals():
-				responses[nodename][terminal.name] = 1
+			if smart_sampling is None:
+				responses[nodename] = {x: -1 for x in taxa_list}
+				for terminal in nodes[nodename].get_terminals():
+					responses[nodename][terminal.name] = 1
+			elif smart_sampling == 1:
+				print(nodename)
+				responses[nodename] = {x: 0 for x in taxa_list}
+				for terminal in nodes[nodename].get_terminals():
+					responses[nodename][terminal.name] = 1
+				target = nodes[nodename]
+				response_sum = sum(responses[nodename].values())
+				while response_sum > 0.1 * len(nodes[nodename].get_terminals()):
+					try:
+						parent = tree.get_path(target)[-2]
+						for cousin in parent.get_terminals():
+							if responses[nodename][cousin.name] == 0:
+								responses[nodename][cousin.name] = -1
+						response_sum = sum(responses[nodename].values())
+						target = parent
+					except:
+						parent = tree.root
+						for cousin in parent.get_terminals():
+							if responses[nodename][cousin.name] == 0:
+								responses[nodename][cousin.name] = -1
+						response_sum = 0
+					if len(taxa_list) < 2.0 * len(nodes[nodename].get_terminals()):
+						pass
 	else:
 		with open(response_filename, 'r') as file:
 			basename = os.path.splitext(os.path.basename(response_filename))[0]

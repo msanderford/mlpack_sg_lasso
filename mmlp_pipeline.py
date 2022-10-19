@@ -8,7 +8,8 @@ import gene_contribution_visualizer as gcv
 
 
 def main(args):
-	hypothesis_file_list = pf.generate_hypothesis_set(args.tree, args.nodelist, args.response, args.auto_name_nodes, args.cladesize_cutoff, args.auto_name_length)
+	hypothesis_file_list = pf.generate_hypothesis_set(args.tree, args.nodelist, args.response, args.auto_name_nodes, args.cladesize_cutoff_lower,
+													  args.cladesize_cutoff_upper, args.auto_name_length, args.smart_sampling)
 	HSS = {}
 	missing_seqs = set()
 	merged_rep_predictions_files = {hypothesis_filename:[] for hypothesis_filename in hypothesis_file_list}
@@ -98,7 +99,9 @@ if __name__ == '__main__':
 						type=str, default=None)
 	parser.add_argument("--auto_name_nodes", help="Assign automatically generated names to unnamed internal nodes, causing them to be tested.", action='store_true', default=False)
 	parser.add_argument("--auto_name_length", help="Number of characters to take from sequence IDs to generate internal node labels.", type=int, default=5)
-	parser.add_argument("--cladesize_cutoff", help="Internal nodes with fewer than cladesize_cutoff terminal descendants will not be tested.", type=int, default=0)
+	parser.add_argument("--cladesize_cutoff_lower", help="Internal nodes with fewer than cladesize_cutoff_lower terminal descendants will not be tested.", type=int, default=0)
+	parser.add_argument("--cladesize_cutoff_upper", help="Internal nodes with greater than cladesize_cutoff_upper terminal descendants will not be tested.", type=int,default=None)
+	parser.add_argument("--smart_sampling", help="For each selected positive sample, select a balanced, phylogenetically informed negative sample.", type=int, default=None)
 	parser.add_argument("--response", help="File containing list of named node/response value pairs.", type=str, default=None)
 	parser.add_argument("-z", "--lambda1", help="Feature sparsity parameter.", type=float, default=0.1)
 	parser.add_argument("-y", "--lambda2", help="Group sparsity parameter.", type=float, default=0.1)
