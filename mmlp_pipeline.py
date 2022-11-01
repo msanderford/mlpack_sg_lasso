@@ -8,8 +8,7 @@ import gene_contribution_visualizer as gcv
 
 
 def main(args):
-	hypothesis_file_list = pf.generate_hypothesis_set(args.tree, args.nodelist, args.response, args.auto_name_nodes, args.cladesize_cutoff_lower,
-													  args.cladesize_cutoff_upper, args.auto_name_length, args.smart_sampling)
+	hypothesis_file_list, slep_opts_file_list = pf.generate_hypothesis_set(args)
 	HSS = {}
 	missing_seqs = set()
 	merged_rep_predictions_files = {hypothesis_filename:[] for hypothesis_filename in hypothesis_file_list}
@@ -29,7 +28,7 @@ def main(args):
 					for line in file:
 						data = line.strip().split("\t")
 						missing_seqs.add((data[1], os.path.splitext(os.path.basename(data[0]))[0]))
-				weights_file_list = pf.run_mlp(features_filename_list, groups_filename_list, response_filename_list, field_filename_list, args.lambda1, args.lambda2, args.method, args.slep_opts)
+				weights_file_list = pf.run_mlp(features_filename_list, groups_filename_list, response_filename_list, field_filename_list, args.lambda1, args.lambda2, args.method, slep_opts_file_list)
 				pf.process_weights(weights_file_list, hypothesis_file_list, groups_filename_list, features_filename_list, gene_list, HSS, missing_seqs, group_list)
 				for hypothesis_filename in hypothesis_file_list:
 					if i+1 == args.ensemble_coverage and j+1 == args.ensemble_parts and not args.sparsify:
@@ -58,10 +57,14 @@ def main(args):
 			shutil.move(tempdir, args.output)
 		for file in gcv_files:
 			shutil.move(file, args.output)
+		if args.auto_name_nodes:
+			shutil.move("auto_named_{}".format(os.path.basename(args.tree)), args.output)
 		with open(os.path.join(args.output, "HSS.txt"), 'w') as file:
 			file.write("{}\t{}\n".format("Hypothesis", "HSS"))
 			for hypothesis_filename in hypothesis_file_list:
 				file.write("{}\t{}\n".format(hypothesis_filename.replace("_hypothesis.txt", ""), HSS[hypothesis_filename]))
+				shutil.move(hypothesis_filename.replace("hypothesis.txt", "slep_opts.txt"), args.output)
+				shutil.move(hypothesis_filename.replace("hypothesis.txt", "sweights.txt"), args.output)
 		result_files_list = pf.find_result_files(args, hypothesis_file_list)
 		weights = pf.parse_result_files(args, result_files_list)
 		return pf.analyze_ensemble_weights(args, weights)
@@ -71,7 +74,7 @@ def main(args):
 			for line in file:
 				data = line.strip().split("\t")
 				missing_seqs.add((data[1], os.path.splitext(os.path.basename(data[0]))[0]))
-		weights_file_list = pf.run_mlp(features_filename_list, groups_filename_list, response_filename_list, field_filename_list, args.lambda1, args.lambda2, args.method, args.slep_opts)
+		weights_file_list = pf.run_mlp(features_filename_list, groups_filename_list, response_filename_list, field_filename_list, args.lambda1, args.lambda2, args.method, slep_opts_file_list)
 		pf.process_weights(weights_file_list, hypothesis_file_list, groups_filename_list, features_filename_list, gene_list, HSS, missing_seqs, group_list)
 		for hypothesis_filename in hypothesis_file_list:
 			shutil.move(hypothesis_filename, args.output)
@@ -80,10 +83,14 @@ def main(args):
 			shutil.move(hypothesis_filename.replace("hypothesis.txt", "mapped_feature_weights.txt"), args.output)
 			shutil.move(hypothesis_filename.replace("hypothesis.txt", "PSS.txt"), args.output)
 			shutil.move(hypothesis_filename.replace("hypothesis.txt", "GSS.txt"), args.output)
+		if args.auto_name_nodes:
+			shutil.move("auto_named_{}".format(os.path.basename(args.tree)), args.output)
 		with open(os.path.join(args.output, "HSS.txt"), 'w') as file:
 			file.write("{}\t{}\n".format("Hypothesis", "HSS"))
 			for hypothesis_filename in hypothesis_file_list:
 				file.write("{}\t{}\n".format(hypothesis_filename.replace("_hypothesis.txt", ""), HSS[hypothesis_filename]))
+				shutil.move(hypothesis_filename.replace("hypothesis.txt", "slep_opts.txt"), args.output)
+				shutil.move(hypothesis_filename.replace("hypothesis.txt", "sweights.txt"), args.output)
 				gcv_files.append(gcv.main(os.path.join(args.output,hypothesis_filename.replace("hypothesis.txt", "gene_predictions.txt")),gene_limit=args.gene_display_limit, ssq_threshold=args.gene_display_cutoff))
 		for file in gcv_files:
 			if os.path.dirname(file)!=os.path.normpath(args.output):
@@ -102,6 +109,8 @@ if __name__ == '__main__':
 	parser.add_argument("--cladesize_cutoff_lower", help="Internal nodes with fewer than cladesize_cutoff_lower terminal descendants will not be tested.", type=int, default=0)
 	parser.add_argument("--cladesize_cutoff_upper", help="Internal nodes with greater than cladesize_cutoff_upper terminal descendants will not be tested.", type=int,default=None)
 	parser.add_argument("--smart_sampling", help="For each selected positive sample, select a balanced, phylogenetically informed negative sample.", type=int, default=None)
+	parser.add_argument("--slep_sample_balance", help="Automatically uses the SLEP option to balance sample weights, only available for non-overlapping, logistic sglasso.",
+						action='store_true', default=False)
 	parser.add_argument("--response", help="File containing list of named node/response value pairs.", type=str, default=None)
 	parser.add_argument("-z", "--lambda1", help="Feature sparsity parameter.", type=float, default=0.1)
 	parser.add_argument("-y", "--lambda2", help="Group sparsity parameter.", type=float, default=0.1)
