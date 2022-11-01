@@ -198,7 +198,16 @@ def lookup_by_names(tree):
 	return names
 
 
-def generate_hypothesis_set(newick_filename, nodelist_filename=None, response_filename=None, auto_name_nodes=False, cladesize_cutoff_lower=0, cladesize_cutoff_upper=None, auto_name_length=5, smart_sampling=None):
+def generate_hypothesis_set(args):
+	newick_filename = args.tree
+	nodelist_filename = args.nodelist
+	response_filename = args.response
+	auto_name_nodes = args.auto_name_nodes
+	cladesize_cutoff_lower = args.cladesize_cutoff_lower
+	cladesize_cutoff_upper = args.cladesize_cutoff_upper
+	auto_name_length = args.auto_name_length
+	smart_sampling = args.smart_sampling
+	slep_sample_balance = args.slep_sample_balance
 	tree = Phylo.parse(newick_filename, 'newick').__next__()
 	taxa_list = [x.name for x in tree.get_terminals()]
 	if cladesize_cutoff_upper is None:
@@ -209,13 +218,14 @@ def generate_hypothesis_set(newick_filename, nodelist_filename=None, response_fi
 		i = 0
 		for clade in tree.find_clades():
 			if not clade.name:
-				new_name = "{}_{}_{}".format(i, clade[0].get_terminals()[0].name[0:auto_name_length], clade[1].get_terminals()[0].name[0:auto_name_length])
+				new_name = "{}_{}_{}".format(clade[0].get_terminals()[0].name[0:auto_name_length], clade[1].get_terminals()[0].name[0:auto_name_length], i)
 				if new_name in auto_names:
 					raise ValueError("Duplicate auto generated name: {}\nIncrease size of auto_name_length parameter and try again.".format(new_name))
 				else:
 					clade.name = new_name
 					auto_names += [new_name]
 					i += 1
+		Phylo.write(tree, "auto_named_{}".format(os.path.basename(newick_filename)), "newick")
 	nodes = lookup_by_names(tree)
 	# print(tree)
 	if nodelist_filename is None:
@@ -237,7 +247,7 @@ def generate_hypothesis_set(newick_filename, nodelist_filename=None, response_fi
 				for terminal in nodes[nodename].get_terminals():
 					responses[nodename][terminal.name] = 1
 			elif smart_sampling == 1:
-				print(nodename)
+				# print(nodename)
 				responses[nodename] = {x: 0 for x in taxa_list}
 				for terminal in nodes[nodename].get_terminals():
 					responses[nodename][terminal.name] = 1
@@ -273,12 +283,29 @@ def generate_hypothesis_set(newick_filename, nodelist_filename=None, response_fi
 			for key in responses[basename].keys():
 				if responses[basename][key] is None:
 					responses[basename][key] = "0"
+	hypothesis_file_list = []
+	slep_opts_file_list = []
 	for nodename in responses.keys():
 		with open("{}_hypothesis.txt".format(nodename), 'w') as file:
 			for taxa in taxa_list:
 				if responses[nodename][taxa] != "0":
 					file.write("{}\t{}\n".format(taxa, responses[nodename][taxa]))
-	return ["{}_hypothesis.txt".format(nodename) for nodename in responses.keys()]
+		hypothesis_file_list += ["{}_hypothesis.txt".format(nodename)]
+		if smart_sampling:
+			slep_opts_file_list += ["{}_slep_opts.txt".format(nodename)]
+			with open("{}_slep_opts.txt".format(nodename), 'w') as opts_file:
+				if args.slep_opts is not None:
+					with open(args.slep_opts, 'r') as base_opts_file:
+						for line in base_opts_file:
+							opts_file.write(line)
+				# ratio = sum([1.0 for x in responses[nodename].values() if x == 1])/sum([1.0 for x in responses[nodename].values() if x == -1])
+				opts_file.write("{}_sweights.txt\n".format(nodename))
+				with open("{}_sweights.txt".format(nodename), 'w') as sweights_file:
+					sweights_file.write("{}\n".format(sum([1.0 for x in responses[nodename].values() if x == 1])/sum([1.0 for x in responses[nodename].values() if x == -1])))
+					sweights_file.write("{}\n".format(1.0))
+		else:
+			slep_opts_file_list += [args.slep_opts]
+	return hypothesis_file_list, slep_opts_file_list
 
 
 def split_path(path):
@@ -396,7 +423,7 @@ def generate_input_matrices(alnlist_filename, hypothesis_filename_list, args):
 		return [features_file_list, group_indices_file_list, response_file_list, gene_list, field_file_list, group_list]
 
 
-def run_mlp(features_filename_list, groups_filename_list, response_filename_list, field_filename_list, sparsity, group_sparsity, method, slep_opts):
+def run_mlp(features_filename_list, groups_filename_list, response_filename_list, field_filename_list, sparsity, group_sparsity, method, slep_opts_filename_list):
 	if method == "leastr":
 		method = "sg_lasso_leastr"
 	elif method == "logistic":
@@ -408,12 +435,12 @@ def run_mlp(features_filename_list, groups_filename_list, response_filename_list
 	weights_file_list = []
 	mlp_exe = os.path.join(os.getcwd(), "bin", method)
 	# Run sg_lasso for each response file in response_filename_list
-	for response_filename, features_filename, groups_filename, field_filename in zip(response_filename_list, features_filename_list, groups_filename_list, field_filename_list):
+	for response_filename, features_filename, groups_filename, field_filename, slep_opts_filename in zip(response_filename_list, features_filename_list, groups_filename_list, field_filename_list, slep_opts_filename_list):
 		basename = str(os.path.splitext(os.path.basename(response_filename))[0]).replace("response_","")
-		if slep_opts is None:
+		if slep_opts_filename is None:
 			mlp_cmd = "{} -f {} -z {} -y {} -n {} -r {} -w {}".format(mlp_exe, features_filename, sparsity, group_sparsity, groups_filename, response_filename, basename + "_out_feature_weights")
 		else:
-			mlp_cmd = "{} -f {} -z {} -y {} -n {} -r {} -s {} -w {}".format(mlp_exe, features_filename, sparsity, group_sparsity, groups_filename, response_filename, slep_opts, basename + "_out_feature_weights")
+			mlp_cmd = "{} -f {} -z {} -y {} -n {} -r {} -s {} -w {}".format(mlp_exe, features_filename, sparsity, group_sparsity, groups_filename, response_filename, slep_opts_filename, basename + "_out_feature_weights")
 		if method == "overlapping_sg_lasso_leastr":
 			mlp_cmd = mlp_cmd + " -g {}".format(field_filename)
 		print(mlp_cmd)
