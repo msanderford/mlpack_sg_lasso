@@ -63,8 +63,9 @@ def main(args):
 			file.write("{}\t{}\n".format("Hypothesis", "HSS"))
 			for hypothesis_filename in hypothesis_file_list:
 				file.write("{}\t{}\n".format(hypothesis_filename.replace("_hypothesis.txt", ""), HSS[hypothesis_filename]))
-				shutil.move(hypothesis_filename.replace("hypothesis.txt", "slep_opts.txt"), args.output)
-				shutil.move(hypothesis_filename.replace("hypothesis.txt", "sweights.txt"), args.output)
+				if args.slep_sample_balance:
+					shutil.move(hypothesis_filename.replace("hypothesis.txt", "slep_opts.txt"), args.output)
+					shutil.move(hypothesis_filename.replace("hypothesis.txt", "sweights.txt"), args.output)
 		result_files_list = pf.find_result_files(args, hypothesis_file_list)
 		weights = pf.parse_result_files(args, result_files_list)
 		return pf.analyze_ensemble_weights(args, weights)
@@ -89,8 +90,9 @@ def main(args):
 			file.write("{}\t{}\n".format("Hypothesis", "HSS"))
 			for hypothesis_filename in hypothesis_file_list:
 				file.write("{}\t{}\n".format(hypothesis_filename.replace("_hypothesis.txt", ""), HSS[hypothesis_filename]))
-				shutil.move(hypothesis_filename.replace("hypothesis.txt", "slep_opts.txt"), args.output)
-				shutil.move(hypothesis_filename.replace("hypothesis.txt", "sweights.txt"), args.output)
+				if args.slep_sample_balance:
+					shutil.move(hypothesis_filename.replace("hypothesis.txt", "slep_opts.txt"), args.output)
+					shutil.move(hypothesis_filename.replace("hypothesis.txt", "sweights.txt"), args.output)
 				gcv_files.append(gcv.main(os.path.join(args.output,hypothesis_filename.replace("hypothesis.txt", "gene_predictions.txt")),gene_limit=args.gene_display_limit, ssq_threshold=args.gene_display_cutoff))
 		for file in gcv_files:
 			if os.path.dirname(file)!=os.path.normpath(args.output):
