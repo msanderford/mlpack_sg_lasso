@@ -207,7 +207,8 @@ def generate_hypothesis_set(args):
 	cladesize_cutoff_upper = args.cladesize_cutoff_upper
 	auto_name_length = args.auto_name_length
 	smart_sampling = args.smart_sampling
-	slep_sample_balance = args.slep_sample_balance
+	if args.slep_sample_balance or args.smart_sampling:
+		slep_sample_balance = True
 	tree = Phylo.parse(newick_filename, 'newick').__next__()
 	taxa_list = [x.name for x in tree.get_terminals()]
 	if cladesize_cutoff_upper is None:
@@ -241,6 +242,7 @@ def generate_hypothesis_set(args):
 	# print(tree)
 	responses = {}
 	if response_filename is None:
+		distance_matrix = {t1: {t2: tree.distance(t1, t2) for t2 in taxa_list} for t1 in taxa_list}
 		for nodename in nodelist:
 			if smart_sampling is None:
 				responses[nodename] = {x: -1 for x in taxa_list}
@@ -269,6 +271,25 @@ def generate_hypothesis_set(args):
 						response_sum = 0
 					if len(taxa_list) < 2.0 * len(nodes[nodename].get_terminals()):
 						pass
+				response_sum = sum(responses[nodename].values())
+				if response_sum < 0.1 * len(nodes[nodename].get_terminals()):
+					temp_distance = copy.deepcopy(distance_matrix)
+					negative_set = [key for key in responses[nodename].keys() if responses[nodename][key] == -1]
+					for i in range(response_sum, 0):
+						#get minimum pair distance from matrix
+						#print(negative_set)
+						#print(temp_distance.keys())
+						minimum_distance = min([min([temp_distance[t1][t2] for t1 in negative_set if t1 != t2]) for t2 in negative_set])
+						min_taxa = set()
+						[[min_taxa.add(t1) for t1 in negative_set if temp_distance[t1][t2] == minimum_distance] for t2 in negative_set]
+						min_taxa = list(min_taxa)
+						#print(min_taxa)
+						random.shuffle(min_taxa)
+						#randomly delete half of pair
+						#print(min_taxa[0])
+						responses[nodename][min_taxa[0]] = 0
+						negative_set.remove(min_taxa[0])
+
 	else:
 		with open(response_filename, 'r') as file:
 			basename = os.path.splitext(os.path.basename(response_filename))[0]
@@ -299,7 +320,7 @@ def generate_hypothesis_set(args):
 						for line in base_opts_file:
 							opts_file.write(line)
 				# ratio = sum([1.0 for x in responses[nodename].values() if x == 1])/sum([1.0 for x in responses[nodename].values() if x == -1])
-				opts_file.write("sWeight\t{}_sweights.txt\n".format(nodename))
+				opts_file.write("{}_sweights.txt\n".format(nodename))
 				with open("{}_sweights.txt".format(nodename), 'w') as sweights_file:
 					sweights_file.write("{}\n".format(sum([1.0 for x in responses[nodename].values() if x == 1])/sum([1.0 for x in responses[nodename].values() if x == -1])))
 					sweights_file.write("{}\n".format(1.0))
@@ -322,7 +343,7 @@ def split_path(path):
 def generate_input_matrices(alnlist_filename, hypothesis_filename_list, args):
 	output_basename = args.output
 	options = ""
-	modified_response = True
+	modified_response = False
 	if args.upsample_balance:
 		options = "{} {}".format(options.strip(),"ub")
 		modified_response = True
