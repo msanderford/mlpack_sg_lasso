@@ -9,4 +9,6 @@ g++-8 -std=c++17 sg_lasso_leastr_main.cpp sg_lasso_leastr.cpp -o sg_lasso_leastr
 cp sg_lasso_leastr ../bin
 g++-8 -std=c++17 overlapping_sg_lasso_leastr_main.cpp overlapping_sg_lasso_leastr.cpp -o overlapping_sg_lasso_leastr -Iinclude -lopenblas -llapack
 cp overlapping_sg_lasso_leastr ../bin
+g++-8 -std=c++17 overlapping_sg_lasso_logisticr_main.cpp overlapping_sg_lasso_logisticr.cpp -o overlapping_sg_lasso_logisticr -Iinclude -lopenblas -llapack
+cp overlapping_sg_lasso_logisticr ../bin
 cd ..
