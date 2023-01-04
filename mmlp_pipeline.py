@@ -90,7 +90,7 @@ def main(args):
 			file.write("{}\t{}\n".format("Hypothesis", "HSS"))
 			for hypothesis_filename in hypothesis_file_list:
 				file.write("{}\t{}\n".format(hypothesis_filename.replace("_hypothesis.txt", ""), HSS[hypothesis_filename]))
-				if args.slep_sample_balance:
+				if args.slep_sample_balance or args.smart_sampling:
 					shutil.move(hypothesis_filename.replace("hypothesis.txt", "slep_opts.txt"), args.output)
 					shutil.move(hypothesis_filename.replace("hypothesis.txt", "sweights.txt"), args.output)
 				gcv_files.append(gcv.main(os.path.join(args.output,hypothesis_filename.replace("hypothesis.txt", "gene_predictions.txt")),gene_limit=args.gene_display_limit, ssq_threshold=args.gene_display_cutoff))
