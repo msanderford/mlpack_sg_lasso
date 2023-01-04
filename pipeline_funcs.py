@@ -343,7 +343,7 @@ def split_path(path):
 def generate_input_matrices(alnlist_filename, hypothesis_filename_list, args):
 	output_basename = args.output
 	options = ""
-	modified_response = False
+	modified_response = True
 	if args.upsample_balance:
 		options = "{} {}".format(options.strip(),"ub")
 		modified_response = True
