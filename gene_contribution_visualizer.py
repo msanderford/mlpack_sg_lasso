@@ -80,6 +80,7 @@ def main(predictions_table, lead_cols=4, response_idx=2, prediction_idx=3, outpu
 	if output is None:
 		output = os.path.join(os.path.dirname(predictions_table),"{}.png".format(os.path.splitext(os.path.basename(predictions_table))[0]))
 	plt.savefig(output, dpi=DPI, bbox_inches='tight')
+	plt.close()
 	return output
 
 	
