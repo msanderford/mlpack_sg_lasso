@@ -207,6 +207,7 @@ def generate_hypothesis_set(args):
 	cladesize_cutoff_upper = args.cladesize_cutoff_upper
 	auto_name_length = args.auto_name_length
 	smart_sampling = args.smart_sampling
+	slep_sample_balance = False
 	if args.slep_sample_balance or args.smart_sampling:
 		slep_sample_balance = True
 	tree = Phylo.parse(newick_filename, 'newick').__next__()
