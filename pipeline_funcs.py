@@ -323,7 +323,7 @@ def generate_hypothesis_set(args):
 				# ratio = sum([1.0 for x in responses[nodename].values() if x == 1])/sum([1.0 for x in responses[nodename].values() if x == -1])
 				opts_file.write("{}_sweights.txt\n".format(nodename))
 				with open("{}_sweights.txt".format(nodename), 'w') as sweights_file:
-					sweights_file.write("{}\n".format(sum([1.0 for x in responses[nodename].values() if x == 1])/sum([1.0 for x in responses[nodename].values() if x == -1])))
+					sweights_file.write("{}\n".format(sum([1.0 for x in responses[nodename].values() if int(x) == 1])/sum([1.0 for x in responses[nodename].values() if int(x) == -1])))
 					sweights_file.write("{}\n".format(1.0))
 		else:
 			slep_opts_file_list += [args.slep_opts]
