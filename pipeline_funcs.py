@@ -290,7 +290,68 @@ def generate_hypothesis_set(args):
 						#print(min_taxa[0])
 						responses[nodename][min_taxa[0]] = 0
 						negative_set.remove(min_taxa[0])
-
+			elif smart_sampling == 2:
+				# print(nodename)
+				responses[nodename] = {x: 0 for x in taxa_list}
+				for terminal in nodes[nodename].get_terminals():
+					responses[nodename][terminal.name] = 1
+				target = nodes[nodename]
+				response_sum = sum(responses[nodename].values())
+				while response_sum > 0:
+					try:
+						parent = tree.get_path(target)[-2]
+						for cousin in parent.get_terminals():
+							if responses[nodename][cousin.name] == 0:
+								responses[nodename][cousin.name] = -1
+						response_sum = sum(responses[nodename].values())
+						target = parent
+					except:
+						parent = tree.root
+						for cousin in parent.get_terminals():
+							if responses[nodename][cousin.name] == 0:
+								responses[nodename][cousin.name] = -1
+						response_sum = 0
+					if len(taxa_list) < 2.0 * len(nodes[nodename].get_terminals()):
+						pass
+				response_sum = sum(responses[nodename].values())
+#				if response_sum < 0.1 * len(nodes[nodename].get_terminals()):
+				if response_sum < 0:
+					temp_distance = copy.deepcopy(distance_matrix)
+					negative_set = [key for key in responses[nodename].keys() if responses[nodename][key] == -1]
+					for i in range(response_sum, 0):
+						#get minimum pair distance from matrix
+						#print(negative_set)
+						#print(temp_distance.keys())
+						minimum_distance = min([min([temp_distance[t1][t2] for t1 in negative_set if t1 != t2]) for t2 in negative_set])
+						min_taxa = set()
+						[[min_taxa.add(t1) for t1 in negative_set if temp_distance[t1][t2] == minimum_distance] for t2 in negative_set]
+						min_taxa = list(min_taxa)
+						#print(min_taxa)
+						random.shuffle(min_taxa)
+						#randomly delete half of pair
+						#print(min_taxa[0])
+						responses[nodename][min_taxa[0]] = 0
+						negative_set.remove(min_taxa[0])
+				response_sum = sum(responses[nodename].values())
+#				elif response_sum > 0.1 * len(nodes[nodename].get_terminals()):
+				if response_sum > 0:
+					temp_distance = copy.deepcopy(distance_matrix)
+#					negative_set = [key for key in responses[nodename].keys() if responses[nodename][key] == -1]
+					positive_set = [key for key in responses[nodename].keys() if responses[nodename][key] == 1]
+					for i in range(0, response_sum):
+						#get minimum pair distance from matrix
+						#print(negative_set)
+						#print(temp_distance.keys())
+						minimum_distance = min([min([temp_distance[t1][t2] for t1 in positive_set if t1 != t2]) for t2 in positive_set])
+						min_taxa = set()
+						[[min_taxa.add(t1) for t1 in positive_set if temp_distance[t1][t2] == minimum_distance] for t2 in positive_set]
+						min_taxa = list(min_taxa)
+						#print(min_taxa)
+						random.shuffle(min_taxa)
+						#randomly delete half of pair
+						#print(min_taxa[0])
+						responses[nodename][min_taxa[0]] = 0
+						positive_set.remove(min_taxa[0])
 	else:
 		with open(response_filename, 'r') as file:
 			basename = os.path.splitext(os.path.basename(response_filename))[0]
