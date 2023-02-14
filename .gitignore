@@ -9,3 +9,4 @@ src/preprocess
 src/sg_lasso
 src/sg_lasso_leastr
 src/overlapping_sg_lasso_leastr
+src/overlapping_sg_lasso_logisticr

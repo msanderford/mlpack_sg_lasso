@@ -218,7 +218,7 @@ void alnData::processFastaFileList(string alnFileList)
 				{
 					this->geneGroupIndex[fastaFileName] = this->geneGroupIndex.size();
 					this->readAln(fastaFileName);
-					fastaFileName.erase(fastaFileName.find(".fas"), string::npos);
+					fastaFileName.erase(fastaFileName.find(".fa"), string::npos);
 					fastaFileName.erase(0, fastaFileName.find("/")+1);
 					this->currentGene = fastaFileName;
 					this->processAln();
