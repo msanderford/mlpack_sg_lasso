@@ -408,7 +408,7 @@ def generate_hypothesis_set(args):
 	for nodename in responses.keys():
 		with open("{}_hypothesis.txt".format(nodename), 'w') as file:
 			for taxa in taxa_list:
-				if responses[nodename][taxa] != 0:
+				if responses[nodename][taxa] not in [0, "0"]:
 					file.write("{}\t{}\n".format(taxa, responses[nodename][taxa]))
 		hypothesis_file_list += ["{}_hypothesis.txt".format(nodename)]
 		if slep_sample_balance:
