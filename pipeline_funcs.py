@@ -8,6 +8,7 @@ import shutil
 import numpy
 import xml.etree.ElementTree as ET
 from Bio import Phylo
+from Bio import AlignIO
 
 
 def find_result_files(args, hypothesis_file_list):
@@ -529,6 +530,17 @@ def generate_input_matrices(alnlist_filename, hypothesis_filename_list, args):
 				else:
 					shutil.move(os.path.join(preprocess_cwd, output_basename), output_basename)
 			hypothesis_basename = os.path.splitext(os.path.basename(filename))[0]
+			if True:
+				position_stats = {}
+				#stat_keys = ["mic", "entropy"]
+				stat_keys = ["mic"]
+				for aln_basename in aln_file_list.keys():
+					position_stats[aln_basename] = calculate_position_stats(os.path.join(preprocess_cwd, aln_file_list[aln_basename]), filename)
+				with open(os.path.join(output_basename, "pos_stats_" + hypothesis_basename + ".txt"), 'w') as file:
+					file.write("{}\t{}\n".format("Position Name", '\t'.join(stat_keys)))
+					for aln_basename in position_stats.keys():
+						for i in range(0, len(position_stats[aln_basename]["mic"])):
+							file.write("{}_{}\t{}\n".format(aln_basename, i, '\t'.join([str(position_stats[aln_basename][stat_key][i]) for stat_key in stat_keys])))
 			shutil.move(os.path.join(output_basename, "feature_" + output_basename + ".txt"), os.path.join(output_basename, "feature_" + hypothesis_basename + ".txt"))
 			shutil.move(os.path.join(output_basename, "group_indices_" + output_basename + ".txt"), os.path.join(output_basename, "group_indices_" + hypothesis_basename + ".txt"))
 			shutil.move(os.path.join(output_basename, "response_" + output_basename + ".txt"), os.path.join(output_basename, "response_" + hypothesis_basename + ".txt"))
@@ -543,6 +555,50 @@ def generate_input_matrices(alnlist_filename, hypothesis_filename_list, args):
 			field_file_list.append(os.path.join(output_basename, "field_" + hypothesis_basename + ".txt"))
 			features_file_list.append(os.path.join(output_basename, "feature_" + hypothesis_basename + ".txt"))
 		return [features_file_list, group_indices_file_list, response_file_list, gene_list, field_file_list, group_list]
+
+
+def calculate_position_stats(aln_filename, hypothesis_filename):
+	mic = []
+	entropy = []
+	with open(hypothesis_filename) as hypothesis_file:
+		responses = {}
+		species_counts = [0, 0]
+		for line in hypothesis_file.readlines():
+			data = line.strip().split('\t')
+			if int(data[1]) in [-1, 1]:
+				responses[data[0]] = int(data[1])
+				if int(data[1]) == 1:
+					species_counts[0] += 1
+				elif int(data[1]) == -1:
+					species_counts[1] += 1
+			else:
+				responses[data[0]] = 0
+		aln = AlignIO.read(aln_filename, "fasta")
+		aln.sort(key=lambda record: responses.get(record.id, 0))
+		aln1 = aln[0:species_counts[0]]
+		aln.sort(key=lambda record: responses.get(record.id, 0), reverse=True)
+		aln2 = aln[0:species_counts[1]]
+		for i in range(0, aln.get_alignment_length()):
+			base_counts1 = {'A': 0, 'T': 0, 'C': 0, 'G': 0}
+			base_counts2 = {'A': 0, 'T': 0, 'C': 0, 'G': 0}
+			for base in aln1[:, i]:
+				base_counts1[base] = base_counts1.get(base, 0) + 1
+			for base in aln2[:, i]:
+				base_counts2[base] = base_counts2.get(base, 0) + 1
+			base_counts1['total'] = sum([base_counts1[base] for base in ["A", "T", "C", "G"]])
+			base_counts2['total'] = sum([base_counts2[base] for base in ["A", "T", "C", "G"]])
+			base_counts = {base: base_counts1[base]+base_counts2[base] for base in ['A', 'T', 'C', 'G', 'total']}
+			for counts in [base_counts1, base_counts2, base_counts]:
+				for base in ['A', 'T', 'C', 'G']:
+					if counts['total'] > 0:
+						counts[base] = counts[base]/counts['total']
+					else:
+						counts[base] = 0
+			ic1 = sum([0 if base_counts1[base] == 0 else base_counts1[base] * numpy.log10(base_counts1[base]) for base in ['A', 'T', 'C', 'G']])
+			ic2 = sum([0 if base_counts2[base] == 0 else base_counts2[base] * numpy.log10(base_counts2[base]) for base in ['A', 'T', 'C', 'G']])
+			ic = sum([0 if base_counts[base] == 0 else base_counts[base] * numpy.log10(base_counts[base]) for base in ['A', 'T', 'C', 'G']])
+			mic.append(max(ic - ic1 - ic2, 0))
+	return {"mic": mic, "entropy": entropy}
 
 
 def run_mlp(features_filename_list, groups_filename_list, response_filename_list, field_filename_list, sparsity, group_sparsity, method, slep_opts_filename_list):
@@ -586,12 +642,19 @@ def generate_mapped_weights_file(weights_filename, feature_map_filename):
 	last_posname = ""
 	model = xml_model_to_dict(weights_filename)
 	feature_map = {}
+	pos_stats = {}
 	output_filename = str(weights_filename).replace("_hypothesis_out_feature_weights.xml", "_mapped_feature_weights.txt")
 	with open(feature_map_filename, 'r') as file:
 		for line in file:
 			data = line.strip().split("\t")
 			if len(data) == 2:
 				feature_map[int(data[0])] = data[1]
+	if os.path.exists(feature_map_filename.replace("feature_mapping_", "pos_stats_")):
+		with open(feature_map_filename.replace("feature_mapping_", "pos_stats_"), 'r') as file:
+			for line in file:
+				data = line.strip().split("\t")
+				if len(data) > 1:
+					pos_stats[data[0]] = data[1:]
 	with open(output_filename, 'w') as file:
 		for i in range(0, len(model["weight_list"])):
 			file.write("{}\t{}\n".format(feature_map[i+1], model["weight_list"][i]))
@@ -601,9 +664,14 @@ def generate_mapped_weights_file(weights_filename, feature_map_filename):
 				last_posname = posname
 			PSS[posname] = PSS.get(posname, 0.0) + abs(model["weight_list"][i])
 	with open(str(output_filename).replace("_mapped_feature_weights.txt", "_PSS.txt"), 'w') as file:
-		file.write("{}\t{}\n".format("Position Name", "PSS"))
-		for posname in posname_list:
-			file.write("{}\t{}\n".format(posname, PSS[posname]))
+		if len(pos_stats) > 1:
+			file.write("{}\t{}\t{}\n".format("Position Name", "PSS", '\t'.join(pos_stats["Position Name"])))
+			for posname in posname_list:
+				file.write("{}\t{}\t{}\n".format(posname, PSS[posname], '\t'.join(pos_stats[posname])))
+		else:
+			file.write("{}\t{}\n".format("Position Name", "PSS"))
+			for posname in posname_list:
+				file.write("{}\t{}\n".format(posname, PSS[posname]))
 	# Return sum of all position significance scores
 	return sum(PSS.values())
 
